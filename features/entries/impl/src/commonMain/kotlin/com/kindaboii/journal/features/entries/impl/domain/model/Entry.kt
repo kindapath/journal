@@ -1,4 +1,4 @@
-package com.kindaboii.journal.domain.model
+﻿package com.kindaboii.journal.features.entries.impl.domain.model
 
 import kotlinx.datetime.LocalDate
 
@@ -8,3 +8,5 @@ data class Entry(
     val summary: String,
     val date: LocalDate,
 )
+
+
