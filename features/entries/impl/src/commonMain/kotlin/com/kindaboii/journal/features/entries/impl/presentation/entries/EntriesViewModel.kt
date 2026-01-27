@@ -7,7 +7,11 @@ import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseC
 class EntriesViewModel(
     getEntriesUseCase: GetEntriesUseCase,
 ) {
-    private val _uiState = mutableStateOf(EntriesUiState(entries = getEntriesUseCase()))
+    private val _uiState = mutableStateOf(
+        getEntriesUseCase().let { entries ->
+            if (entries.isEmpty()) EntriesUiState.Empty else EntriesUiState.Content(entries)
+        },
+    )
     val uiState: State<EntriesUiState> = _uiState
 }
 
