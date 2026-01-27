@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.presentation.entries
+﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,9 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kindaboii.journal.domain.model.Entry
+import com.kindaboii.journal.common.ui.fadingEdges
+import com.kindaboii.journal.features.entries.impl.domain.model.Entry
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import org.koin.compose.koinInject
@@ -42,6 +44,7 @@ import org.koin.compose.koinInject
 fun EntriesScreen(
     darkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    onAddEntry: () -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
     val uiState by viewModel.uiState
@@ -57,11 +60,13 @@ fun EntriesScreen(
                 darkTheme = darkTheme,
                 onToggleTheme = onToggleTheme,
                 entries = uiState.entries,
+                onAddEntry = onAddEntry,
             )
             EntriesLayoutType.Compact -> EntriesCompactScreen(
                 darkTheme = darkTheme,
                 onToggleTheme = onToggleTheme,
                 entries = uiState.entries,
+                onAddEntry = onAddEntry,
             )
         }
     }
@@ -72,6 +77,7 @@ private fun EntriesExpandedScreen(
     darkTheme: Boolean,
     onToggleTheme: () -> Unit,
     entries: List<Entry>,
+    onAddEntry: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxSize(),
@@ -88,6 +94,7 @@ private fun EntriesExpandedScreen(
                 onToggleTheme = onToggleTheme,
                 entries = entries,
                 layoutType = EntriesLayoutType.Expanded,
+                onAddEntry = onAddEntry,
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -99,12 +106,14 @@ private fun EntriesCompactScreen(
     darkTheme: Boolean,
     onToggleTheme: () -> Unit,
     entries: List<Entry>,
+    onAddEntry: () -> Unit,
 ) {
     EntriesScaffold(
         darkTheme = darkTheme,
         onToggleTheme = onToggleTheme,
         entries = entries,
         layoutType = EntriesLayoutType.Compact,
+        onAddEntry = onAddEntry,
     )
 }
 
@@ -114,10 +123,11 @@ private fun EntriesScaffold(
     onToggleTheme: () -> Unit,
     entries: List<Entry>,
     layoutType: EntriesLayoutType,
+    onAddEntry: () -> Unit,
 ) {
     Scaffold(
         topBar = { EntriesTopBar(darkTheme = darkTheme, onToggleTheme = onToggleTheme) },
-        floatingActionButton = { AddEntryFab() },
+        floatingActionButton = { AddEntryFab(onAddEntry) },
         floatingActionButtonPosition = FabPosition.Center,
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
     ) { paddingValues ->
@@ -249,6 +259,11 @@ private fun EntryCard(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 5,
+                overflow = TextOverflow.Clip,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fadingEdges(bottom = 20.dp),
             )
             Text(
                 text = formatDate(entry.date),
@@ -288,9 +303,11 @@ private enum class EntriesLayoutType {
 }
 
 @Composable
-private fun AddEntryFab() {
+private fun AddEntryFab(
+    onAddEntry: () -> Unit,
+) {
     FloatingActionButton(
-        onClick = {},
+        onClick = onAddEntry,
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier.padding(8.dp),

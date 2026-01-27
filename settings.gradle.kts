@@ -1,4 +1,4 @@
-rootProject.name = "Journal"
+﻿rootProject.name = "Journal"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -37,3 +37,7 @@ include(":desktopApp")
 include(":server")
 include(":shared")
 include(":webApp")
+
+include(":features:entries:api")
+include(":features:entries:impl")
+include(":common:ui")

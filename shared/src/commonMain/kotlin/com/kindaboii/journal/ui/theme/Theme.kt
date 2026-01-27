@@ -1,4 +1,4 @@
-package com.kindaboii.journal.ui.theme
+﻿package com.kindaboii.journal.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -46,3 +46,4 @@ fun JournalTheme(
         content = content,
     )
 }
+
