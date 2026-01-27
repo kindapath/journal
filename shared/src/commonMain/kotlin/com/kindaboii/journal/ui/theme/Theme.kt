@@ -9,31 +9,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColors: ColorScheme = lightColorScheme(
-    primary = Color(0xFF7B66B8),
+    primary = Color(0xFF5E5CE7),
     onPrimary = Color(0xFFFFFFFF),
-    secondary = Color(0xFF9A89C6),
+    secondary = Color(0xFF5755D7),
     onSecondary = Color(0xFFFFFFFF),
-    background = Color(0xFFF4F1F9),
-    onBackground = Color(0xFF1E1A28),
-    surface = Color(0xFFFCFAFF),
-    onSurface = Color(0xFF1E1A28),
-    surfaceVariant = Color(0xFFE6E1F0),
-    onSurfaceVariant = Color(0xFF4B4556),
-    outline = Color(0xFF9A92A8),
+    background = Color(0xFFF8F6F5),
+    onBackground = Color(0xFF000000),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF000000),
+    surfaceVariant = Color(0xFFFAF3F3),
+    onSurfaceVariant = Color(0xFF6B6470),
+    outline = Color(0xFFB8B1BC),
 )
 
 private val DarkColors: ColorScheme = darkColorScheme(
-    primary = Color(0xFFC5B6F0),
-    onPrimary = Color(0xFF2A203B),
-    secondary = Color(0xFFB8A8E2),
-    onSecondary = Color(0xFF2B2240),
-    background = Color(0xFF15131B),
-    onBackground = Color(0xFFE9E3F2),
-    surface = Color(0xFF1C1822),
-    onSurface = Color(0xFFE9E3F2),
-    surfaceVariant = Color(0xFF2A2432),
-    onSurfaceVariant = Color(0xFFC9C1D7),
-    outline = Color(0xFF8E869C),
+    primary = Color(0xFF5E5CE7),
+    onPrimary = Color(0xFFFFFFFF),
+    secondary = Color(0xFF5F3C69),
+    onSecondary = Color(0xFFFFFFFF),
+    background = Color(0xFF0C0F1F),
+    onBackground = Color(0xFFF1ECF6),
+    surface = Color(0xFF362644),
+    onSurface = Color(0xFFF1ECF6),
+    surfaceVariant = Color(0xFF5F3C69),
+    onSurfaceVariant = Color(0xFFD6CDE0),
+    outline = Color(0xFF787880),
 )
 
 @Composable
@@ -46,4 +46,3 @@ fun JournalTheme(
         content = content,
     )
 }
-
