@@ -9,14 +9,12 @@ import androidx.compose.ui.Modifier
 import com.kindaboii.journal.features.entries.impl.navigation.EntriesNavigation
 
 @Composable
-fun AppNavigation(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
-) {
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        EntriesNavigation(
-            darkTheme = darkTheme,
-            onToggleTheme = onToggleTheme,
-        )
+fun AppNavigation() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        EntriesNavigation()
     }
 }
