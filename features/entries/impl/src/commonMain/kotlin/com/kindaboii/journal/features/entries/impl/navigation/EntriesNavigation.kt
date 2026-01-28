@@ -66,13 +66,17 @@ fun EntriesNavigation() {
         entryProvider = entryProvider {
             entry<EntriesRoute> {
                 EntriesScreen(
-                    onAddEntry = { backStack.add(CreateEntryRoute) },
+                    onAddEntry = {
+                        if (backStack.lastOrNull() != CreateEntryRoute) {
+                            backStack.add(CreateEntryRoute)
+                        }
+                    },
                 )
             }
             entry<CreateEntryRoute> {
                 CreateEntryScreen(
-                    onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
-                    onDone = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+                    onBack = { if (backStack.size > 1) backStack.removeLast() },
+                    onDone = { if (backStack.size > 1) backStack.removeLast() },
                 )
             }
         },
