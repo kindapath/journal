@@ -3,13 +3,13 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.text.BasicTextField
@@ -23,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kindaboii.journal.common.ui.ConstrainedContainer
+import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.withLayoutType
 import org.koin.compose.koinInject
 
 @Composable
@@ -33,6 +36,76 @@ fun CreateEntryScreen(
     val viewModel: CreateEntryViewModel = koinInject()
     val uiState = viewModel.uiState.collectAsState().value
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        withLayoutType { layoutType ->
+            when (layoutType) {
+                LayoutType.Expanded -> CreateEntryExpandedScreen(
+                    uiState = uiState,
+                    onBack = onBack,
+                    onDone = onDone,
+                    onTitleChange = viewModel::onTitleChange,
+                    onBodyChange = viewModel::onBodyChange,
+                )
+                LayoutType.Compact -> CreateEntryCompactScreen(
+                    uiState = uiState,
+                    onBack = onBack,
+                    onDone = onDone,
+                    onTitleChange = viewModel::onTitleChange,
+                    onBodyChange = viewModel::onBodyChange,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreateEntryExpandedScreen(
+    uiState: CreateEntryUiState,
+    onBack: () -> Unit,
+    onDone: () -> Unit,
+    onTitleChange: (String) -> Unit,
+    onBodyChange: (String) -> Unit,
+) {
+    ConstrainedContainer(maxWidth = 900.dp) {
+        CreateEntryScaffold(
+            uiState = uiState,
+            onBack = onBack,
+            onDone = onDone,
+            onTitleChange = onTitleChange,
+            onBodyChange = onBodyChange,
+        )
+    }
+}
+
+@Composable
+private fun CreateEntryCompactScreen(
+    uiState: CreateEntryUiState,
+    onBack: () -> Unit,
+    onDone: () -> Unit,
+    onTitleChange: (String) -> Unit,
+    onBodyChange: (String) -> Unit,
+) {
+    CreateEntryScaffold(
+        uiState = uiState,
+        onBack = onBack,
+        onDone = onDone,
+        onTitleChange = onTitleChange,
+        onBodyChange = onBodyChange,
+    )
+}
+
+@Composable
+private fun CreateEntryScaffold(
+    uiState: CreateEntryUiState,
+    onBack: () -> Unit,
+    onDone: () -> Unit,
+    onTitleChange: (String) -> Unit,
+    onBodyChange: (String) -> Unit,
+) {
     Scaffold(
         topBar = { CreateEntryTopBar(onBack = onBack, onDone = onDone) },
         containerColor = MaterialTheme.colorScheme.background,
@@ -44,8 +117,8 @@ fun CreateEntryScreen(
             paddingValues = paddingValues,
             title = uiState.title,
             body = uiState.body,
-            onTitleChange = viewModel::onTitleChange,
-            onBodyChange = viewModel::onBodyChange,
+            onTitleChange = onTitleChange,
+            onBodyChange = onBodyChange,
         )
     }
 }
@@ -58,6 +131,8 @@ private fun CreateEntryTopBar(
 ) {
     TopAppBar(
         title = { },
+        modifier = Modifier.padding(top = 24.dp),
+        windowInsets = TopAppBarDefaults.windowInsets,
         navigationIcon = {
             Text(
                 text = "Назад",
@@ -157,4 +232,3 @@ private fun CreateEntryContent(
         )
     }
 }
-
