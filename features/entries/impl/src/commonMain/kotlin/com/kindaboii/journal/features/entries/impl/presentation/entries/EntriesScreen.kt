@@ -170,7 +170,7 @@ private fun EntriesScaffold(
         floatingActionButtonPosition = FabPosition.Center,
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
     ) { paddingValues ->
-        EntriesContent( 
+        EntriesContent(
             uiState = uiState,
             layoutType = layoutType,
             paddingValues = paddingValues,
@@ -190,12 +190,6 @@ private fun EntriesTopBar(
     val menuShape = RoundedCornerShape(16.dp)
     val menuBackground = MaterialTheme.colorScheme.surfaceVariant
     val menuHeightPx = remember { mutableIntStateOf(0) }
-    val density = LocalDensity.current
-    val menuOffset = with(density) {
-        val fallback = 56
-        val heightPx = if (menuHeightPx.intValue > 0) menuHeightPx.intValue else fallback
-        DpOffset(0.dp, -heightPx.toDp() - 6.dp)
-    }
     TopAppBar(
         title = {
             Text(
@@ -211,14 +205,6 @@ private fun EntriesTopBar(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.icon_search_24),
-                    contentDescription = "Поиск",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .size(32.dp),
-                )
-                Icon(
                     painter = painterResource(Res.drawable.icon_more_horiz_24),
                     contentDescription = "Ещё",
                     tint = MaterialTheme.colorScheme.onSurface,
@@ -232,7 +218,6 @@ private fun EntriesTopBar(
                     onDismissRequest = { menuExpanded.value = false },
                     shape = menuShape,
                     containerColor = menuBackground,
-                    offset = menuOffset,
                     modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
                 ) {
                     DropdownMenuItem(
@@ -433,7 +418,8 @@ private fun EntryCard(
                             .onGloballyPositioned { coordinates ->
                                 val position = coordinates.positionInWindow()
                                 anchorLeftPx.intValue = position.x.toInt()
-                                anchorBottomPx.intValue = (position.y + coordinates.size.height).toInt()
+                                anchorBottomPx.intValue =
+                                    (position.y + coordinates.size.height).toInt()
                             },
                     )
                     DropdownMenu(
@@ -578,7 +564,6 @@ private fun EntriesEmptyState(
         )
     }
 }
-
 
 
 @Composable
