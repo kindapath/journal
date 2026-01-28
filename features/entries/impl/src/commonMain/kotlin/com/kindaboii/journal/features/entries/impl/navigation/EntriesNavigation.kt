@@ -28,10 +28,7 @@ private val navConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun EntriesNavigation(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
-) {
+fun EntriesNavigation() {
     val backStack = rememberNavBackStack(navConfig, EntriesRoute)
 
     NavDisplay(
@@ -69,8 +66,6 @@ fun EntriesNavigation(
         entryProvider = entryProvider {
             entry<EntriesRoute> {
                 EntriesScreen(
-                    darkTheme = darkTheme,
-                    onToggleTheme = onToggleTheme,
                     onAddEntry = { backStack.add(CreateEntryRoute) },
                 )
             }

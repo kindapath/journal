@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -66,14 +67,11 @@ import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
-import journal.features.entries.impl.generated.resources.icon_search_24
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import journal.features.entries.impl.generated.resources.icon_dark_mode_24
-import journal.features.entries.impl.generated.resources.icon_light_mode_24
 import journal.features.entries.impl.generated.resources.journal_logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
@@ -81,8 +79,6 @@ import org.koin.compose.koinInject
 
 @Composable
 fun EntriesScreen(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     onAddEntry: () -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
@@ -91,20 +87,16 @@ fun EntriesScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(appBackgroundBrush(darkTheme)),
+            .background(appBackgroundBrush()),
     ) {
         withLayoutType { layoutType ->
             when (layoutType) {
                 LayoutType.Expanded -> EntriesExpandedScreen(
-                    darkTheme = darkTheme,
-                    onToggleTheme = onToggleTheme,
                     uiState = uiState,
                     onAddEntry = onAddEntry,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
-                    darkTheme = darkTheme,
-                    onToggleTheme = onToggleTheme,
                     uiState = uiState,
                     onAddEntry = onAddEntry,
                 )
@@ -115,15 +107,11 @@ fun EntriesScreen(
 
 @Composable
 private fun EntriesExpandedScreen(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
-            darkTheme = darkTheme,
-            onToggleTheme = onToggleTheme,
             uiState = uiState,
             layoutType = LayoutType.Expanded,
             onAddEntry = onAddEntry,
@@ -133,14 +121,10 @@ private fun EntriesExpandedScreen(
 
 @Composable
 private fun EntriesCompactScreen(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
 ) {
     EntriesScaffold(
-        darkTheme = darkTheme,
-        onToggleTheme = onToggleTheme,
         uiState = uiState,
         layoutType = LayoutType.Compact,
         onAddEntry = onAddEntry,
@@ -150,8 +134,6 @@ private fun EntriesCompactScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesScaffold(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     uiState: EntriesUiState,
     layoutType: LayoutType,
     onAddEntry: () -> Unit,
@@ -161,8 +143,6 @@ private fun EntriesScaffold(
     Scaffold(
         topBar = {
             EntriesTopBar(
-                darkTheme = darkTheme,
-                onToggleTheme = onToggleTheme,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -182,8 +162,6 @@ private fun EntriesScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesTopBar(
-    darkTheme: Boolean,
-    onToggleTheme: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -220,23 +198,6 @@ private fun EntriesTopBar(
                     containerColor = menuBackground,
                     modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
                 ) {
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = if (darkTheme) Res.drawable.icon_light_mode_24
-                                else Res.drawable.icon_dark_mode_24,
-                                text = if (darkTheme) "Светлая тема" else "Тёмная тема",
-                                onClick = {
-                                    menuExpanded.value = false
-                                    onToggleTheme()
-                                },
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            onToggleTheme()
-                        },
-                    )
                 }
             }
         },
@@ -567,9 +528,10 @@ private fun EntriesEmptyState(
 
 
 @Composable
-private fun appBackgroundBrush(
-    darkTheme: Boolean,
-): Brush {
+private fun appBackgroundBrush(): Brush {
+
+    val darkTheme = isSystemInDarkTheme()
+
     val colors = if (darkTheme) {
         listOf(
             Color(0xFF0C0F1F),

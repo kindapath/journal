@@ -60,8 +60,6 @@ kotlin {
 
         implementation(project(":common:ui"))
         implementation(project(":features:entries:api"))
-
-        testImplementation(libs.kotlin.test)
     }
 }
 

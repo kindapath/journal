@@ -26,24 +26,24 @@ kotlin {
             isIncludeAndroidResources = true
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "JournalShared"
             isStatic = true
         }
     }
-    
+
     jvm()
 
     js {
         browser()
         binaries.executable()
     }
-    
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
