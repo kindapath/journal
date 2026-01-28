@@ -3,12 +3,10 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +21,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,6 +57,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.fadingEdges
+import com.kindaboii.journal.common.ui.ConstrainedContainer
+import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.impl.domain.model.Entry
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
@@ -88,26 +88,27 @@ fun EntriesScreen(
     val viewModel: EntriesViewModel = koinInject()
     val uiState by viewModel.uiState
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(appBackgroundBrush(darkTheme)),
     ) {
-        val layoutType = layoutTypeFor(maxWidth)
-        when (layoutType) {
-            EntriesLayoutType.Expanded -> EntriesExpandedScreen(
-                darkTheme = darkTheme,
-                onToggleTheme = onToggleTheme,
-                uiState = uiState,
-                onAddEntry = onAddEntry,
-            )
+        withLayoutType { layoutType ->
+            when (layoutType) {
+                LayoutType.Expanded -> EntriesExpandedScreen(
+                    darkTheme = darkTheme,
+                    onToggleTheme = onToggleTheme,
+                    uiState = uiState,
+                    onAddEntry = onAddEntry,
+                )
 
-            EntriesLayoutType.Compact -> EntriesCompactScreen(
-                darkTheme = darkTheme,
-                onToggleTheme = onToggleTheme,
-                uiState = uiState,
-                onAddEntry = onAddEntry,
-            )
+                LayoutType.Compact -> EntriesCompactScreen(
+                    darkTheme = darkTheme,
+                    onToggleTheme = onToggleTheme,
+                    uiState = uiState,
+                    onAddEntry = onAddEntry,
+                )
+            }
         }
     }
 }
@@ -119,25 +120,14 @@ private fun EntriesExpandedScreen(
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-        BoxWithConstraints(
-            modifier = Modifier
-                .weight(10f)
-                .widthIn(max = 980.dp),
-        ) {
-            EntriesScaffold(
-                darkTheme = darkTheme,
-                onToggleTheme = onToggleTheme,
-                uiState = uiState,
-                layoutType = EntriesLayoutType.Expanded,
-                onAddEntry = onAddEntry,
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
+    ConstrainedContainer(maxWidth = 900.dp) {
+        EntriesScaffold(
+            darkTheme = darkTheme,
+            onToggleTheme = onToggleTheme,
+            uiState = uiState,
+            layoutType = LayoutType.Expanded,
+            onAddEntry = onAddEntry,
+        )
     }
 }
 
@@ -152,7 +142,7 @@ private fun EntriesCompactScreen(
         darkTheme = darkTheme,
         onToggleTheme = onToggleTheme,
         uiState = uiState,
-        layoutType = EntriesLayoutType.Compact,
+        layoutType = LayoutType.Compact,
         onAddEntry = onAddEntry,
     )
 }
@@ -163,7 +153,7 @@ private fun EntriesScaffold(
     darkTheme: Boolean,
     onToggleTheme: () -> Unit,
     uiState: EntriesUiState,
-    layoutType: EntriesLayoutType,
+    layoutType: LayoutType,
     onAddEntry: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -180,7 +170,7 @@ private fun EntriesScaffold(
         floatingActionButtonPosition = FabPosition.Center,
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
     ) { paddingValues ->
-        EntriesContent(
+        EntriesContent( 
             uiState = uiState,
             layoutType = layoutType,
             paddingValues = paddingValues,
@@ -271,8 +261,8 @@ private fun EntriesTopBar(
             titleContentColor = MaterialTheme.colorScheme.onBackground,
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        modifier = Modifier.statusBarsPadding(),
-        windowInsets = WindowInsets(0, 0, 0, 0),
+        modifier = Modifier.padding(top = 24.dp, bottom = 0.dp),
+        windowInsets = TopAppBarDefaults.windowInsets,
         scrollBehavior = scrollBehavior,
     )
 }
@@ -281,10 +271,11 @@ private fun EntriesTopBar(
 @Composable
 private fun EntriesContent(
     uiState: EntriesUiState,
-    layoutType: EntriesLayoutType,
+    layoutType: LayoutType,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
         targetState = uiState,
         label = "entries_state",
@@ -293,6 +284,7 @@ private fun EntriesContent(
             EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
             is EntriesUiState.Content -> EntriesListCompact(
                 entries = state.entries,
+                maxWidth = maxWidth,
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
             )
@@ -304,27 +296,35 @@ private fun EntriesContent(
 @Composable
 private fun EntriesListCompact(
     entries: List<Entry>,
+    maxWidth: Dp,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     SelectionContainer {
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(paddingValues)
-                .padding(top = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            items(entries, key = { it.id }) { entry ->
-                EntryCard(
-                    entry = entry,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = maxWidth)
+                    .padding(top = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                items(entries, key = { it.id }) { entry ->
+                    EntryCard(
+                        entry = entry,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                }
             }
         }
     }
@@ -493,14 +493,6 @@ private fun formatDate(date: LocalDate): String {
     return "${date.day} $month ${date.year}"
 }
 
-private fun layoutTypeFor(maxWidth: Dp): EntriesLayoutType {
-    return if (maxWidth < 600.dp) EntriesLayoutType.Compact else EntriesLayoutType.Expanded
-}
-
-private enum class EntriesLayoutType {
-    Compact,
-    Expanded,
-}
 
 @Composable
 private fun AddEntryFab(
