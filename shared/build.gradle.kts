@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -50,24 +49,26 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    dependencies {
-        implementation(libs.compose.runtime)
-        implementation(libs.compose.foundation)
-        implementation(libs.compose.material3)
-        implementation(libs.compose.ui)
-        implementation(libs.compose.components.resources)
-        implementation(libs.compose.uiToolingPreview)
-        implementation(libs.androidx.lifecycle.viewmodelCompose)
-        implementation(libs.androidx.lifecycle.runtimeCompose)
-        implementation(libs.koin.core)
-        implementation(libs.koin.compose)
-        implementation(libs.kotlinx.datetime)
-        implementation(libs.kotlinx.serialization.core)
-        implementation(libs.jetbrains.navigation3.ui)
-        implementation(project(":features:entries:impl"))
-
-        testImplementation(libs.kotlin.test)
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.core)
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(project(":features:entries:impl"))
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }
 

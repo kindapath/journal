@@ -41,12 +41,14 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
-    dependencies {
-        implementation(libs.compose.runtime)
-        implementation(libs.compose.ui)
-        implementation(libs.compose.foundation)
-
-        testImplementation(libs.kotlin.test)
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.foundation)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }
