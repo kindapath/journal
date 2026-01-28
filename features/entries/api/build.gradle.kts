@@ -34,9 +34,12 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
-    dependencies {
-        implementation(libs.kotlinx.serialization.core)
-        implementation(libs.kotlin.test)
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.serialization.core)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }
