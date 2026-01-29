@@ -62,16 +62,20 @@ import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.impl.domain.model.Entry
+import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
 
-import kotlinx.datetime.LocalDate
+import kotlin.time.Instant
 import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.unit.sp
 import journal.features.entries.impl.generated.resources.journal_logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
@@ -317,51 +321,66 @@ private fun EntryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                .padding(bottom = 8.dp),
         ) {
+            entry.mood?.let { mood ->
+                MoodHeaderBar(
+                    mood = mood.value,
+                    emotions = mood.emotions,
+                    influences = mood.influences,
+                    time = entry.createdAt,
+                    modifier = Modifier
+                        .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 8.dp),
+                )
+            }
             val title = entry.title?.trim().orEmpty()
             if (title.isNotEmpty()) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
-                        .padding(bottom = 4.dp),
+                        .padding(bottom = 4.dp, start = 16.dp, end = 16.dp),
                 )
             }
-            val summary = entry.summary?.trim().orEmpty()
-            if (summary.isNotEmpty()) {
+            val body = entry.body?.trim().orEmpty()
+            if (body.isNotEmpty()) {
                 Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = body,
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 5,
                     overflow = TextOverflow.Clip,
                     modifier = if (summaryLines.intValue >= 5) {
                         Modifier
+                            .padding(horizontal = 16.dp)
                             .fillMaxWidth()
-                            .fadingEdges(bottom = 80.dp)
+                            .fadingEdges(bottom = 40.dp)
                     } else {
-                        Modifier.fillMaxWidth()
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
                     },
                     onTextLayout = { summaryLines.intValue = it.lineCount },
                 )
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                     modifier = Modifier
-                        .padding(top = 8.dp, bottom = 4.dp)
+                        .padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
                 )
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = formatDate(entry.date),
+                    text = formatDate(entry.createdAt),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -422,8 +441,9 @@ private fun EntryCard(
     }
 }
 
-private fun formatDate(date: LocalDate): String {
-    val month = when (date.month) {
+private fun formatDate(date: Instant): String {
+    val localDate = date.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val month = when (localDate.month) {
         Month.JANUARY -> "января"
         Month.FEBRUARY -> "февраля"
         Month.MARCH -> "марта"
@@ -437,7 +457,7 @@ private fun formatDate(date: LocalDate): String {
         Month.NOVEMBER -> "ноября"
         Month.DECEMBER -> "декабря"
     }
-    return "${date.day} $month ${date.year}"
+    return "${localDate.day} $month ${localDate.year}"
 }
 
 

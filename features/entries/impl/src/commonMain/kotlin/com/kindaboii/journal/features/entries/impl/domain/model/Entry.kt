@@ -1,12 +1,17 @@
 ﻿package com.kindaboii.journal.features.entries.impl.domain.model
 
-import kotlinx.datetime.LocalDate
+import kotlin.time.Instant
+
 
 data class Entry(
     val id: String,
     val title: String?,
-    val summary: String?,
-    val date: LocalDate,
+    val body: String?,
+    val mood: Mood?,
+    val createdAt: Instant,
+    val updatedAt: Instant?,
 )
+
+
 
 
