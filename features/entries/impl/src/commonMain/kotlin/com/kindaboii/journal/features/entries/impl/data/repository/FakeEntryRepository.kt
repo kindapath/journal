@@ -2,7 +2,7 @@ package com.kindaboii.journal.features.entries.impl.data.repository
 
 import com.kindaboii.journal.features.entries.impl.domain.model.Entry
 import com.kindaboii.journal.features.entries.impl.domain.model.Mood
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class FakeEntryRepository : EntryRepository {
     override fun getEntries(): List<Entry> =

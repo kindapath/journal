@@ -1,6 +1,5 @@
 ﻿package com.kindaboii.journal.features.entries.impl.di
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
 import com.kindaboii.journal.features.entries.impl.data.repository.FakeEntryRepository
 import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseCase
