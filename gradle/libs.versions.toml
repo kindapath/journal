@@ -23,7 +23,6 @@ ktor = "3.4.0"
 logback = "1.5.26"
 material3 = "1.10.0-alpha05"
 sqldelight = "2.2.1"
-webWorkerDriver = "2.2.1"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "coroutinesExtensions" }
@@ -59,7 +58,8 @@ ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "kt
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "coroutinesExtensions" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "coroutinesExtensions" }
-web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "webWorkerDriver" }
+web-worker-driver-wasm-js = { module = "app.cash.sqldelight:web-worker-driver-wasm-js", version.ref = "sqldelight" }
+web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "sqldelight" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

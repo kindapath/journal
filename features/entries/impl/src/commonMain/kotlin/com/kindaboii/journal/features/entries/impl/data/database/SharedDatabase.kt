@@ -2,6 +2,7 @@ package com.kindaboii.journal.features.entries.impl.data.database
 
 import app.cash.sqldelight.ColumnAdapter
 import com.kindaboii.journal.EntryEntity
+import com.kindaboii.journal.features.entries.impl.Constants.DATABASE_NOT_INITIALIZED
 import kotlinx.serialization.json.Json.Default.decodeFromString
 import kotlinx.serialization.json.Json.Default.encodeToString
 
@@ -33,7 +34,7 @@ class SharedDatabase(private val databaseDriverFactory: DatabaseDriverFactory) {
         initDatabase()
         return database.takeIf { it != null }?.let {
             block(it)
-        } ?: throw IllegalStateException("Database is not initialized")
+        } ?: throw IllegalStateException(DATABASE_NOT_INITIALIZED)
     }
 }
 
