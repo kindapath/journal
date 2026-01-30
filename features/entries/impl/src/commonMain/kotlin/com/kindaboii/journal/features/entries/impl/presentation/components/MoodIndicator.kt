@@ -13,7 +13,7 @@ import kotlin.math.min
 
 @Composable
 fun MoodIndicator(
-    mood: Int,
+    mood: Long,
     indicatorSize: Dp,
     modifier: Modifier = Modifier,
 ) {
@@ -70,7 +70,7 @@ fun MoodIndicator(
 }
 
 internal fun moodToColor(
-    mood: Int,
+    mood: Long,
 ): Color {
     val clamped = mood.coerceIn(0, 100)
     val t = clamped / 100f

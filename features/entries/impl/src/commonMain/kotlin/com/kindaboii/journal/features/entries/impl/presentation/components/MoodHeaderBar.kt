@@ -27,7 +27,7 @@ import kotlin.time.Instant
 
 @Composable
 fun MoodHeaderBar(
-    mood: Int,
+    mood: Long,
     emotions: List<String>,
     influences: List<String>,
     time: Instant,

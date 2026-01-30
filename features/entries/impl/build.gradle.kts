@@ -12,7 +12,7 @@
 sqldelight {
     databases {
         create("EntryDatabase") {
-            packageName.set("com.kindaboii.journal")
+            packageName.set("com.kindaboii.journal.features.entries.impl.data.database")
             generateAsync.set(true)
         }
     }
@@ -73,6 +73,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
 
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(libs.coroutines.extensions)
 
@@ -92,8 +93,12 @@ kotlin {
             implementation(libs.sqlite.driver)
         }
 
-        jsMain.dependencies {
+        webMain.dependencies {
             implementation(libs.web.worker.driver)
+
+            implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.2.1"))
+            implementation(npm("sql.js", "1.13.0"))
+            implementation(devNpm("copy-webpack-plugin", "13.0.1"))
         }
     }
 }

@@ -6,7 +6,7 @@ CREATE TABLE entryEntity (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT,
     body TEXT,
-    moodValue INTEGER AS Int,
+    moodValue INTEGER,
     moodEmotions TEXT AS List<String>,
     moodInfluences TEXT AS List<String>,
     createdAt TEXT NOT NULL,
