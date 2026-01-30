@@ -77,6 +77,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.unit.sp
 import journal.features.entries.impl.generated.resources.journal_logo
+import androidx.compose.runtime.collectAsState
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
@@ -86,7 +87,7 @@ fun EntriesScreen(
     onAddEntry: () -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
-    val uiState by viewModel.uiState
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(
         modifier = Modifier

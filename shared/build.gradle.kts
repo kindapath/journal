@@ -66,6 +66,9 @@ kotlin {
             implementation(libs.jetbrains.navigation3.ui)
             implementation(project(":features:entries:impl"))
         }
+        androidMain.dependencies {
+            implementation(libs.koin.android)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

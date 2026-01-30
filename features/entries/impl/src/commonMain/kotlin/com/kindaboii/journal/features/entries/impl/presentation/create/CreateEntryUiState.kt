@@ -3,6 +3,7 @@
 data class CreateEntryUiState(
     val title: String,
     val body: String,
+    val isSaving: Boolean,
 )
 
 

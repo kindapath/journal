@@ -46,14 +46,14 @@ fun CreateEntryScreen(
                 LayoutType.Expanded -> CreateEntryExpandedScreen(
                     uiState = uiState,
                     onBack = onBack,
-                    onDone = onDone,
+                    onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
                 )
                 LayoutType.Compact -> CreateEntryCompactScreen(
                     uiState = uiState,
                     onBack = onBack,
-                    onDone = onDone,
+                    onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
                 )

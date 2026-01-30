@@ -2,11 +2,12 @@
 
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
 import com.kindaboii.journal.features.entries.impl.domain.models.Entry
+import kotlinx.coroutines.flow.Flow
 
 class GetEntriesUseCase(
     private val repository: EntryRepository,
 ) {
-    operator fun invoke(): List<Entry> = repository.getEntries()
+    operator fun invoke(): Flow<List<Entry>> = repository.getEntries()
 }
 
 
