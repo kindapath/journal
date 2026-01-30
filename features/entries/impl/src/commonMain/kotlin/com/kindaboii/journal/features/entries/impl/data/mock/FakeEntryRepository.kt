@@ -1,7 +1,8 @@
-package com.kindaboii.journal.features.entries.impl.data.repository
+package com.kindaboii.journal.features.entries.impl.data.mock
 
-import com.kindaboii.journal.features.entries.impl.domain.model.Entry
-import com.kindaboii.journal.features.entries.impl.domain.model.Mood
+import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
+import com.kindaboii.journal.features.entries.impl.domain.models.Entry
+import com.kindaboii.journal.features.entries.impl.domain.models.Mood
 import kotlin.time.Instant
 
 class FakeEntryRepository : EntryRepository {
@@ -16,7 +17,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Благодарность", "Умиротворенность", "Тепло", "Спокойствие"),
                     influences = listOf("Забота о себе", "Прогулка", "Природа", "Фитнес"),
                 ),
-                createdAt = Instant.parse("2024-04-01T09:15:00Z"),
+                createdAt = Instant.Companion.parse("2024-04-01T09:15:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -28,7 +29,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Сдержанность", "Тишина", "Усталость"),
                     influences = listOf("Неспешный день", "Саморефлексия"),
                 ),
-                createdAt = Instant.parse("2024-04-02T18:30:00Z"),
+                createdAt = Instant.Companion.parse("2024-04-02T18:30:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -40,7 +41,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Радость", "Уют"),
                     influences = listOf("Еда", "Утро", "Новый опыт", "Разговор"),
                 ),
-                createdAt = Instant.parse("2024-03-31T08:20:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-31T08:20:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -52,7 +53,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Пустота"),
                     influences = listOf("Пауза"),
                 ),
-                createdAt = Instant.parse("2024-03-31T21:05:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-31T21:05:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -64,7 +65,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Спокойствие", "Мягкость"),
                     influences = listOf("Дождь", "Тишина", "Чтение"),
                 ),
-                createdAt = Instant.parse("2024-03-30T20:10:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-30T20:10:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -76,7 +77,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Вдохновение", "Радость", "Лёгкость"),
                     influences = listOf("Природа", "Дорога", "Свежий воздух"),
                 ),
-                createdAt = Instant.parse("2024-04-01T13:40:00Z"),
+                createdAt = Instant.Companion.parse("2024-04-01T13:40:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -88,7 +89,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Уют", "Тепло"),
                     influences = listOf("Еда", "Люди"),
                 ),
-                createdAt = Instant.parse("2024-03-31T10:05:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-31T10:05:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -100,7 +101,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Тишина", "Ровность"),
                     influences = listOf("Дождь", "Окно", "Вечер"),
                 ),
-                createdAt = Instant.parse("2024-03-30T22:15:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-30T22:15:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -112,7 +113,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Восторг", "Вдохновение"),
                     influences = listOf("Прогулка", "Горы", "Солнце"),
                 ),
-                createdAt = Instant.parse("2024-04-01T07:30:00Z"),
+                createdAt = Instant.Companion.parse("2024-04-01T07:30:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -124,7 +125,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Уют", "Спокойствие"),
                     influences = listOf("Еда", "Утро", "Теплый хлеб"),
                 ),
-                createdAt = Instant.parse("2024-03-31T09:50:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-31T09:50:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -136,7 +137,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Смирение"),
                     influences = listOf("Дождь", "Вечер"),
                 ),
-                createdAt = Instant.parse("2024-03-30T19:55:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-30T19:55:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -148,7 +149,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Радость", "Свобода"),
                     influences = listOf("Природа", "Дорога"),
                 ),
-                createdAt = Instant.parse("2024-04-01T11:05:00Z"),
+                createdAt = Instant.Companion.parse("2024-04-01T11:05:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -160,7 +161,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Тепло"),
                     influences = listOf("Люди", "Еда", "Разговор"),
                 ),
-                createdAt = Instant.parse("2024-03-31T07:45:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-31T07:45:00Z"),
                 updatedAt = null,
             ),
             Entry(
@@ -172,7 +173,7 @@ class FakeEntryRepository : EntryRepository {
                     emotions = listOf("Спокойствие"),
                     influences = listOf("Дождь", "Тишина"),
                 ),
-                createdAt = Instant.parse("2024-03-30T18:40:00Z"),
+                createdAt = Instant.Companion.parse("2024-03-30T18:40:00Z"),
                 updatedAt = null,
             ),
         )

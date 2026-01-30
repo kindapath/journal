@@ -1,0 +1,55 @@
+import kotlin.Int;
+import kotlin.String;
+import kotlin.collections.List;
+
+CREATE TABLE entryEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT,
+    body TEXT,
+    moodValue INTEGER AS Int,
+    moodEmotions TEXT AS List<String>,
+    moodInfluences TEXT AS List<String>,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT
+);
+
+insertEntry:
+INSERT OR REPLACE
+INTO entryEntity(
+    id,
+    title,
+    body,
+    moodValue,
+    moodEmotions,
+    moodInfluences,
+    createdAt,
+    updatedAt
+)
+VALUES ?;
+
+getEntries:
+SELECT *
+FROM entryEntity
+ORDER BY createdAt DESC;
+
+getEntryById:
+SELECT *
+FROM entryEntity
+WHERE id = :id;
+
+updateEntry:
+UPDATE entryEntity
+SET title = :title,
+    body = :body,
+    moodValue = :moodValue,
+    moodEmotions = :moodEmotions,
+    moodInfluences = :moodInfluences,
+    updatedAt = :updatedAt
+WHERE id = :id;
+
+deleteEntryById:
+DELETE FROM entryEntity
+WHERE id = :id;
+
+deleteAllEntries:
+DELETE FROM entryEntity;

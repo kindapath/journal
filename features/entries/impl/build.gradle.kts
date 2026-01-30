@@ -3,7 +3,19 @@
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+
     alias(libs.plugins.kotlinSerialization)
+
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("EntryDatabase") {
+            packageName.set("com.kindaboii.journal")
+            generateAsync.set(true)
+        }
+    }
 }
 
 kotlin {
@@ -50,20 +62,38 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+
+            implementation(libs.jetbrains.navigation3.ui)
+
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlinx.serialization.core)
-            implementation(libs.jetbrains.navigation3.ui)
+
+            implementation(libs.coroutines.extensions)
 
             implementation(project(":common:ui"))
             implementation(project(":features:entries:api"))
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+
+        androidMain.dependencies {
+            implementation(libs.android.driver)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.native.driver)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.sqlite.driver)
+        }
+
+        jsMain.dependencies {
+            implementation(libs.web.worker.driver)
         }
     }
 }

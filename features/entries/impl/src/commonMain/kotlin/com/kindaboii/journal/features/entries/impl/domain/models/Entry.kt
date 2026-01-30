@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.features.entries.impl.domain.model
+﻿package com.kindaboii.journal.features.entries.impl.domain.models
 
 import kotlin.time.Instant
 
