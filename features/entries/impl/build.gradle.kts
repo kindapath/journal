@@ -5,17 +5,6 @@
     alias(libs.plugins.composeCompiler)
 
     alias(libs.plugins.kotlinSerialization)
-
-    alias(libs.plugins.sqldelight)
-}
-
-sqldelight {
-    databases {
-        create("EntryDatabase") {
-            packageName.set("com.kindaboii.journal.features.entries.impl.data.database")
-            generateAsync.set(true)
-        }
-    }
 }
 
 kotlin {
@@ -49,10 +38,6 @@ kotlin {
     }
 
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
 
     sourceSets {
         commonMain.dependencies {
@@ -78,36 +63,9 @@ kotlin {
             implementation(libs.coroutines.extensions)
 
             implementation(project(":common:ui"))
+            implementation(project(":data:database"))
             implementation(project(":features:entries:api"))
-        }
-
-        androidMain.dependencies {
-            implementation(libs.android.driver)
-        }
-
-        iosMain.dependencies {
-            implementation(libs.native.driver)
-        }
-
-        jvmMain.dependencies {
-            implementation(libs.sqlite.driver)
-        }
-
-        jsMain.dependencies {
-            implementation(libs.web.worker.driver)
-
-            implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.2.1"))
-            implementation(npm("sql.js", "1.13.0"))
-            implementation(devNpm("copy-webpack-plugin", "13.0.1"))
-        }
-
-
-        wasmJsMain.dependencies {
-            implementation(libs.web.worker.driver.wasm.js)
-
-            implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.2.1"))
-            implementation(npm("sql.js", "1.13.0"))
-            implementation(devNpm("copy-webpack-plugin", "13.0.1"))
+            implementation(project(":features:entries:schema"))
         }
     }
 }

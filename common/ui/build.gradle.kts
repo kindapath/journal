@@ -36,10 +36,6 @@ kotlin {
     }
 
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
 
     sourceSets {
         commonMain.dependencies {

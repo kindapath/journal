@@ -18,7 +18,7 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM
 * [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
-* [/webApp](./webApp/src/webMain) is the Web application entry point.
+* [/webApp](./webApp/src/jsMain) is the Web application entry point.
 
 * [/server](./server/src/main/kotlin) is for the Ktor server application.
 
@@ -68,11 +68,9 @@ in your IDE's toolbar or run it directly from the terminal:
 - for the Wasm target (faster, modern browsers):
   - on macOS/Linux
     ```shell
-    ./gradlew :webApp:wasmJsBrowserDevelopmentRun
     ```
   - on Windows
     ```shell
-    .\gradlew.bat :webApp:wasmJsBrowserDevelopmentRun
     ```
 - for the JS target (slower, supports older browsers):
   - on macOS/Linux

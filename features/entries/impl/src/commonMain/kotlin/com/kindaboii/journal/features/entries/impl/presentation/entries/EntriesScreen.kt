@@ -61,7 +61,7 @@ import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.withLayoutType
-import com.kindaboii.journal.features.entries.impl.domain.models.Entry
+import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24

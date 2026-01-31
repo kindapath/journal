@@ -1,6 +1,7 @@
 ﻿package com.kindaboii.journal.features.entries.impl.di
 
-import com.kindaboii.journal.features.entries.impl.data.database.SharedDatabase
+import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
+import com.kindaboii.journal.features.entries.impl.api.EntriesFeatureApiImpl
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.LocalDataSource
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.LocalDataSourceImpl
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
@@ -11,11 +12,10 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
-
 import org.koin.dsl.module
 
 val entriesModule = module {
-    singleOf(::SharedDatabase)
+    singleOf(::EntriesFeatureApiImpl) { bind<EntriesFeatureApi>() }
     singleOf(::LocalDataSourceImpl) { bind<LocalDataSource>() }
     singleOf(::EntryRepository)
     factoryOf(::GetEntriesUseCase)

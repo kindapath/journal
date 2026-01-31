@@ -1,6 +1,6 @@
-package com.kindaboii.journal.features.entries.impl.data.database.datasource
+﻿package com.kindaboii.journal.features.entries.impl.data.database.datasource
 
-import com.kindaboii.journal.features.entries.impl.domain.models.Entry
+import com.kindaboii.journal.features.entries.api.models.Entry
 import kotlinx.coroutines.flow.Flow
 
 interface LocalDataSource {

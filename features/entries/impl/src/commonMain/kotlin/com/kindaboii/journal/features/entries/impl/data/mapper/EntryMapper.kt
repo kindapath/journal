@@ -1,9 +1,10 @@
-package com.kindaboii.journal.features.entries.impl.data.mapper
+﻿package com.kindaboii.journal.features.entries.impl.data.mapper
 
 
-import com.kindaboii.journal.EntryEntity
-import com.kindaboii.journal.features.entries.impl.domain.models.Entry
-import com.kindaboii.journal.features.entries.impl.domain.models.Mood
+
+import com.kindaboii.journal.features.entries.schema.EntryEntity
+import com.kindaboii.journal.features.entries.api.models.Entry
+import com.kindaboii.journal.features.entries.api.models.Mood
 import kotlin.time.Instant
 
 fun EntryEntity.toDomain() = Entry(

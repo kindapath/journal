@@ -1,10 +1,10 @@
-package com.kindaboii.journal.features.entries.impl.presentation.create
+﻿package com.kindaboii.journal.features.entries.impl.presentation.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
-import com.kindaboii.journal.features.entries.impl.domain.models.Entry
-import com.kindaboii.journal.features.entries.impl.domain.models.Mood
+import com.kindaboii.journal.features.entries.api.models.Entry
+import com.kindaboii.journal.features.entries.api.models.Mood
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableStateFlow

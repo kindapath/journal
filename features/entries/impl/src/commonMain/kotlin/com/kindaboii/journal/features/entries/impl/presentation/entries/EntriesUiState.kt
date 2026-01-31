@@ -1,6 +1,6 @@
 ﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
 
-import com.kindaboii.journal.features.entries.impl.domain.models.Entry
+import com.kindaboii.journal.features.entries.api.models.Entry
 
 sealed interface EntriesUiState {
     data object Empty : EntriesUiState

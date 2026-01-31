@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -43,11 +42,6 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
 
     sourceSets {
         commonMain.dependencies {
@@ -57,13 +51,19 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.core)
+
             implementation(libs.jetbrains.navigation3.ui)
+
+            implementation(project(":data:database"))
             implementation(project(":features:entries:impl"))
         }
         androidMain.dependencies {

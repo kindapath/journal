@@ -1,7 +1,7 @@
-package com.kindaboii.journal.di
+﻿package com.kindaboii.journal.di
 
 import android.app.Application
-import com.kindaboii.journal.features.entries.impl.data.database.DatabaseDriverFactory
+import com.kindaboii.journal.data.database.DatabaseDriverFactory
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
