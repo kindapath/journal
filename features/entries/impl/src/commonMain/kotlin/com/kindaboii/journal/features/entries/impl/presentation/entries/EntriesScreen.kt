@@ -462,7 +462,10 @@ private fun EntryCard(
                                     text = "Редактировать",
                                 )
                             },
-                            onClick = { menuExpanded.value = false },
+                            onClick = {
+                                menuExpanded.value = false
+                                onEditEntry()
+                            },
                         )
                         DropdownMenuItem(
                             text = {

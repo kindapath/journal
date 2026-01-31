@@ -6,14 +6,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.withLayoutType
+import com.kindaboii.journal.features.entries.api.models.Mood
+import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
+import kotlin.time.Clock
 import org.koin.compose.koinInject
 
 @Composable
@@ -57,6 +63,7 @@ fun CreateEntryScreen(
                     onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
+                    onMoodChange = viewModel::onMoodChange,
                 )
                 LayoutType.Compact -> CreateEntryCompactScreen(
                     viewState = viewState,
@@ -64,6 +71,7 @@ fun CreateEntryScreen(
                     onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
+                    onMoodChange = viewModel::onMoodChange,
                 )
             }
         }
@@ -77,6 +85,7 @@ private fun CreateEntryExpandedScreen(
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
+    onMoodChange: (Mood) -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         CreateEntryScaffold(
@@ -85,6 +94,7 @@ private fun CreateEntryExpandedScreen(
             onDone = onDone,
             onTitleChange = onTitleChange,
             onBodyChange = onBodyChange,
+            onMoodChange = onMoodChange,
         )
     }
 }
@@ -96,6 +106,7 @@ private fun CreateEntryCompactScreen(
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
+    onMoodChange: (Mood) -> Unit,
 ) {
     CreateEntryScaffold(
         viewState = viewState,
@@ -103,6 +114,7 @@ private fun CreateEntryCompactScreen(
         onDone = onDone,
         onTitleChange = onTitleChange,
         onBodyChange = onBodyChange,
+        onMoodChange = onMoodChange,
     )
 }
 
@@ -113,6 +125,7 @@ private fun CreateEntryScaffold(
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
+    onMoodChange: (Mood) -> Unit,
 ) {
     Scaffold(
         topBar = { CreateEntryTopBar(onBack = onBack, onDone = onDone) },
@@ -125,8 +138,10 @@ private fun CreateEntryScaffold(
             paddingValues = paddingValues,
             title = viewState.title,
             body = viewState.body,
+            mood = viewState.mood,
             onTitleChange = onTitleChange,
             onBodyChange = onBodyChange,
+            onMoodChange = onMoodChange,
         )
     }
 }
@@ -188,9 +203,12 @@ private fun CreateEntryContent(
     paddingValues: PaddingValues,
     title: String,
     body: String,
+    mood: Mood,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
+    onMoodChange: (Mood) -> Unit,
 ) {
+    val time = Clock.System.now()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -242,5 +260,19 @@ private fun CreateEntryContent(
                 innerTextField()
             },
         )
+        Spacer(modifier = Modifier.weight(1f))
+        MoodHeaderBar(
+            mood = mood.value,
+            emotions = mood.emotions,
+            influences = mood.influences,
+            time = time,
+        )
+        Slider(
+            value = mood.value.toFloat(),
+            onValueChange = { onMoodChange(mood.copy(value = it.toLong())) },
+            valueRange = 1f..100f,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

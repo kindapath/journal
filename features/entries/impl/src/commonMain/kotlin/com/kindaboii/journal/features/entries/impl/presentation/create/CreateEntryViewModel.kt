@@ -42,6 +42,7 @@ class CreateEntryViewModel(
                                 entryId = entry.id,
                                 title = entry.title.orEmpty(),
                                 body = entry.body.orEmpty(),
+                                mood = entry.mood ?: defaultMood(),
                                 isSaving = it.data.isSaving,
                             )
                         }
@@ -60,6 +61,10 @@ class CreateEntryViewModel(
 
     fun onBodyChange(value: String) {
         _viewState.update { it.data.copy(body = value) }
+    }
+
+    fun onMoodChange(mood: Mood) {
+        _viewState.update { it.data.copy(mood = mood) }
     }
 
     fun onDone(onSuccess: () -> Unit) {
@@ -85,16 +90,14 @@ class CreateEntryViewModel(
     @OptIn(ExperimentalUuidApi::class)
     private fun buildEntry(): Entry {
         val now = nowInstant()
-        val (title, body) = trimmedTitleBody()
+        val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
+        val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
+        val mood = _viewState.value.data.mood
         return Entry(
             id = Uuid.random().toString(),
-            title = title,
-            body = body,
-            mood = Mood(
-                value = 50,
-                emotions = listOf("Calm", "Focused", "Hopeful"),
-                influences = listOf("Work", "Rest", "Reflection"),
-            ),
+            title = trimmedTitle,
+            body = trimmedBody,
+            mood = mood,
             createdAt = now,
             updatedAt = null,
         )
@@ -102,20 +105,22 @@ class CreateEntryViewModel(
 
     private fun buildUpdatedEntry(existing: Entry): Entry {
         val now = nowInstant()
-        val (title, body) = trimmedTitleBody()
+        val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
+        val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
+        val mood = _viewState.value.data.mood
         return existing.copy(
-            title = title,
-            body = body,
+            title = trimmedTitle,
+            body = trimmedBody,
+            mood = mood,
             updatedAt = now,
         )
     }
 
-    private fun trimmedTitleBody(): Pair<String?, String?> {
-        val state = _viewState.value.data
-        val title = state.title.trim().ifEmpty { null }
-        val body = state.body.trim().ifEmpty { null }
-        return title to body
-    }
+    private fun defaultMood(): Mood = Mood(
+        value = 50,
+        emotions = listOf("Calm", "Focused", "Hopeful"),
+        influences = listOf("Work", "Rest", "Reflection"),
+    )
 
     private fun nowInstant(): Instant =
         Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds())
