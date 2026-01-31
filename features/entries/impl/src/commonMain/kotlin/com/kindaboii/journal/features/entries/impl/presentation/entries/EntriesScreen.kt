@@ -24,6 +24,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -240,14 +241,16 @@ private fun EntriesContent(
         label = "entries_state",
     ) { state ->
         when (state) {
-            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
-            is EntriesUiState.Content -> EntriesListCompact(
-                entries = state.entries,
-                maxWidth = maxWidth,
-                paddingValues = paddingValues,
-                scrollBehavior = scrollBehavior,
-                onDeleteEntry = onDeleteEntry,
-            )
+            EntriesUiState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
+            else -> EntriesLoadingState(paddingValues = paddingValues)
+//            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
+//            is EntriesUiState.Content -> EntriesListCompact(
+//                entries = state.entries,
+//                maxWidth = maxWidth,
+//                paddingValues = paddingValues,
+//                scrollBehavior = scrollBehavior,
+//                onDeleteEntry = onDeleteEntry,
+//            )
         }
     }
 }
@@ -554,6 +557,22 @@ private fun EntriesEmptyState(
             fontWeight = FontWeight.Normal,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun EntriesLoadingState(
+    paddingValues: PaddingValues,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }

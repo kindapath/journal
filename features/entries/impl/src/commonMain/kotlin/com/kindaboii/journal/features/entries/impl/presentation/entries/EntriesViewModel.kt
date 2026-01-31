@@ -14,7 +14,7 @@ class EntriesViewModel(
     private val getEntriesUseCase: GetEntriesUseCase,
     private val repository: EntryRepository,
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<EntriesUiState>(EntriesUiState.Empty)
+    private val _uiState = MutableStateFlow<EntriesUiState>(EntriesUiState.Loading)
     val uiState: StateFlow<EntriesUiState> = _uiState.asStateFlow()
 
     init {
@@ -23,7 +23,9 @@ class EntriesViewModel(
 
     private fun loadEntries() {
         viewModelScope.launch {
-            getEntriesUseCase().collectLatest { entries ->
+            _uiState.value = EntriesUiState.Loading
+            getEntriesUseCase()
+            .collectLatest { entries ->
                 _uiState.value = when {
                     entries.isEmpty() -> EntriesUiState.Empty
                     else -> EntriesUiState.Content(entries)
