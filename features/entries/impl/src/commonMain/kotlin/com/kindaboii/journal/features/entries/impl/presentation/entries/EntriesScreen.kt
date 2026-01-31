@@ -242,15 +242,14 @@ private fun EntriesContent(
     ) { state ->
         when (state) {
             EntriesUiState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
-            else -> EntriesLoadingState(paddingValues = paddingValues)
-//            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
-//            is EntriesUiState.Content -> EntriesListCompact(
-//                entries = state.entries,
-//                maxWidth = maxWidth,
-//                paddingValues = paddingValues,
-//                scrollBehavior = scrollBehavior,
-//                onDeleteEntry = onDeleteEntry,
-//            )
+            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
+            is EntriesUiState.Content -> EntriesListCompact(
+                entries = state.entries,
+                maxWidth = maxWidth,
+                paddingValues = paddingValues,
+                scrollBehavior = scrollBehavior,
+                onDeleteEntry = onDeleteEntry,
+            )
         }
     }
 }
