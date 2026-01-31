@@ -19,8 +19,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
@@ -30,11 +33,16 @@ import org.koin.compose.koinInject
 
 @Composable
 fun CreateEntryScreen(
+    entryId: String?,
     onBack: () -> Unit,
     onDone: () -> Unit,
 ) {
     val viewModel: CreateEntryViewModel = koinInject()
-    val uiState = viewModel.uiState.collectAsState().value
+    val viewState = viewModel.viewState.collectAsState().value.data
+
+    LaunchedEffect(entryId) {
+        viewModel.loadEntry(entryId)
+    }
 
     Box(
         modifier = Modifier
@@ -44,14 +52,14 @@ fun CreateEntryScreen(
         withLayoutType { layoutType ->
             when (layoutType) {
                 LayoutType.Expanded -> CreateEntryExpandedScreen(
-                    uiState = uiState,
+                    viewState = viewState,
                     onBack = onBack,
                     onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
                 )
                 LayoutType.Compact -> CreateEntryCompactScreen(
-                    uiState = uiState,
+                    viewState = viewState,
                     onBack = onBack,
                     onDone = { viewModel.onDone(onDone) },
                     onTitleChange = viewModel::onTitleChange,
@@ -64,7 +72,7 @@ fun CreateEntryScreen(
 
 @Composable
 private fun CreateEntryExpandedScreen(
-    uiState: CreateEntryUiState,
+    viewState: CreateEntryViewState.Data,
     onBack: () -> Unit,
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
@@ -72,7 +80,7 @@ private fun CreateEntryExpandedScreen(
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         CreateEntryScaffold(
-            uiState = uiState,
+            viewState = viewState,
             onBack = onBack,
             onDone = onDone,
             onTitleChange = onTitleChange,
@@ -83,14 +91,14 @@ private fun CreateEntryExpandedScreen(
 
 @Composable
 private fun CreateEntryCompactScreen(
-    uiState: CreateEntryUiState,
+    viewState: CreateEntryViewState.Data,
     onBack: () -> Unit,
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
 ) {
     CreateEntryScaffold(
-        uiState = uiState,
+        viewState = viewState,
         onBack = onBack,
         onDone = onDone,
         onTitleChange = onTitleChange,
@@ -100,7 +108,7 @@ private fun CreateEntryCompactScreen(
 
 @Composable
 private fun CreateEntryScaffold(
-    uiState: CreateEntryUiState,
+    viewState: CreateEntryViewState.Data,
     onBack: () -> Unit,
     onDone: () -> Unit,
     onTitleChange: (String) -> Unit,
@@ -115,8 +123,8 @@ private fun CreateEntryScaffold(
     ) { paddingValues ->
         CreateEntryContent(
             paddingValues = paddingValues,
-            title = uiState.title,
-            body = uiState.body,
+            title = viewState.title,
+            body = viewState.body,
             onTitleChange = onTitleChange,
             onBodyChange = onBodyChange,
         )
@@ -145,7 +153,8 @@ private fun CreateEntryTopBar(
                         shape = MaterialTheme.shapes.small,
                     )
                     .clickable { onBack() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .pointerHoverIcon(PointerIcon.Hand),
             )
         },
         actions = {
@@ -153,7 +162,9 @@ private fun CreateEntryTopBar(
                 text = "Ещё",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(end = 16.dp),
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .pointerHoverIcon(PointerIcon.Hand),
             )
             Text(
                 text = "Готово",
@@ -162,7 +173,8 @@ private fun CreateEntryTopBar(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .padding(end = 16.dp)
-                    .clickable { onDone() },
+                    .clickable { onDone() }
+                    .pointerHoverIcon(PointerIcon.Hand),
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(

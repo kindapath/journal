@@ -7,4 +7,6 @@ import kotlinx.serialization.Serializable
 data object EntriesRoute : NavKey
 
 @Serializable
-data object CreateEntryRoute : NavKey
+data class CreateEntryRoute(
+    val entryId: String? = null,
+) : NavKey

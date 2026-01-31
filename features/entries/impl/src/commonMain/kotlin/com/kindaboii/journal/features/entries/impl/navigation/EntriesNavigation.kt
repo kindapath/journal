@@ -67,14 +67,21 @@ fun EntriesNavigation() {
             entry<EntriesRoute> {
                 EntriesScreen(
                     onAddEntry = {
-                        if (backStack.lastOrNull() != CreateEntryRoute) {
-                            backStack.add(CreateEntryRoute)
+                        if (backStack.lastOrNull() != CreateEntryRoute()) {
+                            backStack.add(CreateEntryRoute())
+                        }
+                    },
+                    onEditEntry = { entryId ->
+                        val route = CreateEntryRoute(entryId = entryId)
+                        if (backStack.lastOrNull() != route) {
+                            backStack.add(route)
                         }
                     },
                 )
             }
-            entry<CreateEntryRoute> {
+            entry<CreateEntryRoute> { route ->
                 CreateEntryScreen(
+                    entryId = route.entryId,
                     onBack = { if (backStack.size > 1) backStack.removeLast() },
                     onDone = { if (backStack.size > 1) backStack.removeLast() },
                 )

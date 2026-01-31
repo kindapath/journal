@@ -39,13 +39,18 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -77,7 +82,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.unit.sp
 import journal.features.entries.impl.generated.resources.journal_logo
-import androidx.compose.runtime.collectAsState
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
@@ -85,6 +89,7 @@ import org.koin.compose.koinInject
 @Composable
 fun EntriesScreen(
     onAddEntry: () -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
     val uiState by viewModel.uiState.collectAsState()
@@ -100,12 +105,14 @@ fun EntriesScreen(
                     uiState = uiState,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
+                    onEditEntry = onEditEntry,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
                     uiState = uiState,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
+                    onEditEntry = onEditEntry,
                 )
             }
         }
@@ -117,6 +124,7 @@ private fun EntriesExpandedScreen(
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
@@ -124,6 +132,7 @@ private fun EntriesExpandedScreen(
             layoutType = LayoutType.Expanded,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
+            onEditEntry = onEditEntry,
         )
     }
 }
@@ -133,12 +142,14 @@ private fun EntriesCompactScreen(
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
     EntriesScaffold(
         uiState = uiState,
         layoutType = LayoutType.Compact,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
+        onEditEntry = onEditEntry,
     )
 }
 
@@ -149,6 +160,7 @@ private fun EntriesScaffold(
     layoutType: LayoutType,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
@@ -168,6 +180,7 @@ private fun EntriesScaffold(
             paddingValues = paddingValues,
             scrollBehavior = scrollBehavior,
             onDeleteEntry = onDeleteEntry,
+            onEditEntry = onEditEntry,
         )
     }
 }
@@ -202,7 +215,8 @@ private fun EntriesTopBar(
                     modifier = Modifier
                         .padding(start = 12.dp)
                         .size(32.dp)
-                        .clickable { menuExpanded.value = true },
+                        .clickable { menuExpanded.value = true }
+                        .pointerHoverIcon(PointerIcon.Hand),
                 )
                 DropdownMenu(
                     expanded = menuExpanded.value,
@@ -234,6 +248,7 @@ private fun EntriesContent(
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
     onDeleteEntry: (String) -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
@@ -249,6 +264,7 @@ private fun EntriesContent(
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
                 onDeleteEntry = onDeleteEntry,
+                onEditEntry = onEditEntry,
             )
         }
     }
@@ -262,6 +278,7 @@ private fun EntriesListCompact(
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
     onDeleteEntry: (String) -> Unit,
+    onEditEntry: (String) -> Unit,
 ) {
 
     Box(
@@ -284,6 +301,7 @@ private fun EntriesListCompact(
                 EntryCard(
                     entry = entry,
                     onDeleteEntry = { onDeleteEntry(entry.id) },
+                    onEditEntry = { onEditEntry(entry.id) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -298,10 +316,12 @@ private fun EntriesListCompact(
 private fun EntryCard(
     entry: Entry,
     onDeleteEntry: () -> Unit,
+    onEditEntry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
     val summaryLines = remember { mutableIntStateOf(0) }
+    val cardShape = RoundedCornerShape(16.dp)
     val menuShape = RoundedCornerShape(16.dp)
     val menuBackground = MaterialTheme.colorScheme.surfaceVariant
     val menuHeightPx = remember { mutableIntStateOf(0) }
@@ -321,16 +341,23 @@ private fun EntryCard(
         DpOffset(deltaX.toDp(), (deltaY - heightPx).toDp())
     }
 
-    Card(
-        modifier = modifier.onGloballyPositioned { coordinates ->
+    val cardModifier = modifier
+        .shadow(6.dp, cardShape, clip = false)
+        .clip(cardShape)
+        .clickable { onEditEntry() }
+        .pointerHoverIcon(PointerIcon.Hand)
+        .onGloballyPositioned { coordinates ->
             val position = coordinates.positionInWindow()
             cardRightPx.intValue = (position.x + coordinates.size.width).toInt()
             cardBottomPx.intValue = (position.y + coordinates.size.height).toInt()
-        },
+        }
+
+    Card(
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(
