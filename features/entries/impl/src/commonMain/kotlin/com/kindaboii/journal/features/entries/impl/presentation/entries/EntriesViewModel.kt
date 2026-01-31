@@ -2,6 +2,7 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
 import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class EntriesViewModel(
     private val getEntriesUseCase: GetEntriesUseCase,
+    private val repository: EntryRepository,
 ): ViewModel() {
     private val _uiState = MutableStateFlow<EntriesUiState>(EntriesUiState.Empty)
     val uiState: StateFlow<EntriesUiState> = _uiState.asStateFlow()
@@ -27,6 +29,12 @@ class EntriesViewModel(
                     else -> EntriesUiState.Content(entries)
                 }
             }
+        }
+    }
+
+    fun onDeleteEntry(entryId: String) {
+        viewModelScope.launch {
+            repository.deleteEntryById(entryId)
         }
     }
 }

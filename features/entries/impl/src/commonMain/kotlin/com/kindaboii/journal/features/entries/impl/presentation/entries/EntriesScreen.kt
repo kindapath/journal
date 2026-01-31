@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -99,11 +98,13 @@ fun EntriesScreen(
                 LayoutType.Expanded -> EntriesExpandedScreen(
                     uiState = uiState,
                     onAddEntry = onAddEntry,
+                    onDeleteEntry = viewModel::onDeleteEntry,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
                     uiState = uiState,
                     onAddEntry = onAddEntry,
+                    onDeleteEntry = viewModel::onDeleteEntry,
                 )
             }
         }
@@ -114,12 +115,14 @@ fun EntriesScreen(
 private fun EntriesExpandedScreen(
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
+    onDeleteEntry: (String) -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
             uiState = uiState,
             layoutType = LayoutType.Expanded,
             onAddEntry = onAddEntry,
+            onDeleteEntry = onDeleteEntry,
         )
     }
 }
@@ -128,11 +131,13 @@ private fun EntriesExpandedScreen(
 private fun EntriesCompactScreen(
     uiState: EntriesUiState,
     onAddEntry: () -> Unit,
+    onDeleteEntry: (String) -> Unit,
 ) {
     EntriesScaffold(
         uiState = uiState,
         layoutType = LayoutType.Compact,
         onAddEntry = onAddEntry,
+        onDeleteEntry = onDeleteEntry,
     )
 }
 
@@ -142,6 +147,7 @@ private fun EntriesScaffold(
     uiState: EntriesUiState,
     layoutType: LayoutType,
     onAddEntry: () -> Unit,
+    onDeleteEntry: (String) -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
@@ -160,6 +166,7 @@ private fun EntriesScaffold(
             layoutType = layoutType,
             paddingValues = paddingValues,
             scrollBehavior = scrollBehavior,
+            onDeleteEntry = onDeleteEntry,
         )
     }
 }
@@ -225,6 +232,7 @@ private fun EntriesContent(
     layoutType: LayoutType,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
+    onDeleteEntry: (String) -> Unit,
 ) {
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
@@ -238,6 +246,7 @@ private fun EntriesContent(
                 maxWidth = maxWidth,
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
+                onDeleteEntry = onDeleteEntry,
             )
         }
     }
@@ -250,40 +259,43 @@ private fun EntriesListCompact(
     maxWidth: Dp,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
+    onDeleteEntry: (String) -> Unit,
 ) {
-    SelectionContainer {
-        Box(
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .padding(paddingValues),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(paddingValues),
-            contentAlignment = Alignment.TopCenter,
+                .fillMaxWidth()
+                .widthIn(max = maxWidth)
+                .padding(top = 16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = maxWidth)
-                    .padding(top = 16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                items(entries, key = { it.id }) { entry ->
-                    EntryCard(
-                        entry = entry,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                    )
-                }
+            items(entries, key = { it.id }) { entry ->
+                EntryCard(
+                    entry = entry,
+                    onDeleteEntry = { onDeleteEntry(entry.id) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
             }
         }
     }
 }
 
+
 @Composable
 private fun EntryCard(
     entry: Entry,
+    onDeleteEntry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -419,7 +431,6 @@ private fun EntryCard(
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_edit_note_24,
                                     text = "Редактировать",
-                                    onClick = { menuExpanded.value = false },
                                 )
                             },
                             onClick = { menuExpanded.value = false },
@@ -429,11 +440,13 @@ private fun EntryCard(
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_delete_24,
                                     text = "Удалить",
-                                    onClick = { menuExpanded.value = false },
                                     color = MaterialTheme.colorScheme.error,
                                 )
                             },
-                            onClick = { menuExpanded.value = false },
+                            onClick = {
+                                menuExpanded.value = false
+                                onDeleteEntry()
+                            },
                         )
                     }
                 }
@@ -487,13 +500,11 @@ private fun AddEntryFab(
 private fun MenuItemContent(
     iconRes: org.jetbrains.compose.resources.DrawableResource,
     text: String,
-    onClick: () -> Unit,
     color: Color? = null,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
