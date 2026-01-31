@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
@@ -43,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -250,6 +252,7 @@ private fun EntriesContent(
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
+    val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
         targetState = uiState,
@@ -265,6 +268,7 @@ private fun EntriesContent(
                 scrollBehavior = scrollBehavior,
                 onDeleteEntry = onDeleteEntry,
                 onEditEntry = onEditEntry,
+                listState = listState,
             )
         }
     }
@@ -277,6 +281,7 @@ private fun EntriesListCompact(
     maxWidth: Dp,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
+    listState: LazyListState,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
@@ -289,6 +294,7 @@ private fun EntriesListCompact(
         contentAlignment = Alignment.TopCenter,
     ) {
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = maxWidth)
