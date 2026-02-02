@@ -45,3 +45,4 @@ include(":features:entries:impl")
 include(":features:entries:schema")
 
 include(":common:ui")
+include(":common:network")

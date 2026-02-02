@@ -59,12 +59,12 @@ kotlin {
             implementation(libs.koin.compose)
 
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlinx.serialization.core)
 
             implementation(libs.jetbrains.navigation3.ui)
 
             implementation(project(":data:database"))
             implementation(project(":features:entries:impl"))
+            implementation(project(":common:network"))
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
