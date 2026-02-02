@@ -255,14 +255,14 @@ private fun EntriesContent(
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
-        targetState = uiState,
+        targetState = uiState::class,
         label = "entries_state",
-    ) { state ->
-        when (state) {
+    ) {
+        when (uiState) {
             EntriesUiState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
             EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
             is EntriesUiState.Content -> EntriesListCompact(
-                entries = state.entries,
+                entries = uiState.entries,
                 maxWidth = maxWidth,
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
