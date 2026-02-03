@@ -21,6 +21,16 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
         emitAll(entriesFlow)
     }
 
+    override fun getAllEntries(): Flow<List<EntryEntity>> = flow {
+        val entriesFlow = db { database ->
+            database.entryDatabaseQueries
+                .getAllEntries()
+                .asFlow()
+                .mapToList(Dispatchers.Default)
+        }
+        emitAll(entriesFlow)
+    }
+
     override fun getEntryById(id: String): Flow<EntryEntity?> = flow {
         val entryFlow = db { database ->
             database.entryDatabaseQueries
@@ -46,6 +56,7 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
                 moodEmotions = entity.moodEmotions,
                 moodInfluences = entity.moodInfluences,
                 updatedAt = entity.updatedAt,
+                deletedAt = entity.deletedAt,
                 id = entity.id,
             )
         }
@@ -74,4 +85,5 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
             }
         }
     }
+
 }

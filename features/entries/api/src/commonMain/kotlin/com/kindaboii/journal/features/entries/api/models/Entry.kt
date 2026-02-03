@@ -9,4 +9,5 @@ data class Entry(
     val mood: Mood?,
     val createdAt: Instant,
     val updatedAt: Instant?,
+    val deletedAt: Instant?,
 )

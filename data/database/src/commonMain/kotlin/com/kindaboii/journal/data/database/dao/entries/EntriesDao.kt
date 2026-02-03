@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface EntriesDao {
     fun getEntries(): Flow<List<EntryEntity>>
+    fun getAllEntries(): Flow<List<EntryEntity>>
     fun getEntryById(id: String): Flow<EntryEntity?>
     suspend fun insertEntry(entity: EntryEntity)
     suspend fun updateEntry(entity: EntryEntity)

@@ -2,12 +2,12 @@
 
 
 
-import com.kindaboii.journal.features.entries.schema.EntryEntity
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
+import com.kindaboii.journal.features.entries.schema.EntryEntity
 import kotlin.time.Instant
 
-fun EntryEntity.toDomain() = Entry(
+fun EntryEntity.toModel() = Entry(
     id = id,
     title = title,
     body = body,
@@ -19,7 +19,8 @@ fun EntryEntity.toDomain() = Entry(
         )
     },
     createdAt = Instant.parse(createdAt),
-    updatedAt = updatedAt?.let { Instant.parse(it) }
+    updatedAt = updatedAt?.let { Instant.parse(it) },
+    deletedAt = deletedAt?.let { Instant.parse(it) }
 )
 
 fun Entry.toEntity() = EntryEntity(
@@ -30,5 +31,6 @@ fun Entry.toEntity() = EntryEntity(
     moodEmotions = mood?.emotions,
     moodInfluences = mood?.influences,
     createdAt = createdAt.toString(),
-    updatedAt = updatedAt?.toString()
+    updatedAt = updatedAt?.toString(),
+    deletedAt = deletedAt?.toString(),
 )

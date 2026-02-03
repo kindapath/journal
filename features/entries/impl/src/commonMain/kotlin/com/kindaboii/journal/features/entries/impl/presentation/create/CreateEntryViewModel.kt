@@ -100,6 +100,7 @@ class CreateEntryViewModel(
             mood = mood,
             createdAt = now,
             updatedAt = null,
+            deletedAt = null,
         )
     }
 
@@ -113,6 +114,7 @@ class CreateEntryViewModel(
             body = trimmedBody,
             mood = mood,
             updatedAt = now,
+            deletedAt = null,
         )
     }
 

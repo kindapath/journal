@@ -10,7 +10,8 @@ CREATE TABLE entryEntity (
     moodEmotions TEXT AS List<String>,
     moodInfluences TEXT AS List<String>,
     createdAt TEXT NOT NULL,
-    updatedAt TEXT
+    updatedAt TEXT,
+    deletedAt TEXT
 );
 
 insertEntry:
@@ -23,11 +24,18 @@ INTO entryEntity(
     moodEmotions,
     moodInfluences,
     createdAt,
-    updatedAt
+    updatedAt,
+    deletedAt
 )
 VALUES ?;
 
 getEntries:
+SELECT *
+FROM entryEntity
+WHERE deletedAt IS NULL
+ORDER BY createdAt DESC;
+
+getAllEntries:
 SELECT *
 FROM entryEntity
 ORDER BY createdAt DESC;
@@ -35,7 +43,7 @@ ORDER BY createdAt DESC;
 getEntryById:
 SELECT *
 FROM entryEntity
-WHERE id = :id;
+WHERE id = :id AND deletedAt IS NULL;
 
 updateEntry:
 UPDATE entryEntity
@@ -44,7 +52,8 @@ SET title = :title,
     moodValue = :moodValue,
     moodEmotions = :moodEmotions,
     moodInfluences = :moodInfluences,
-    updatedAt = :updatedAt
+    updatedAt = :updatedAt,
+    deletedAt = :deletedAt
 WHERE id = :id;
 
 deleteEntryById:

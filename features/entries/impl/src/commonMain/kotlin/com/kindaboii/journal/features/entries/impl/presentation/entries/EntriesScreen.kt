@@ -43,8 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -252,7 +252,20 @@ private fun EntriesContent(
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
-    val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
+    val listState = remember { LazyListState() }
+
+    // TODO: wtf i dont know, change later
+    val listChangeKey = when (uiState) {
+        is EntriesUiState.Content -> uiState.entries.firstOrNull()?.id to uiState.entries.size
+        else -> null
+    }
+    LaunchedEffect(listChangeKey) {
+        if (listChangeKey != null) {
+            listState.scrollToItem(0)
+        }
+    }
+    //
+
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
         targetState = uiState::class,

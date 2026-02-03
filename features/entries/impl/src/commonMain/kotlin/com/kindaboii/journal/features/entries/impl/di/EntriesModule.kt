@@ -2,8 +2,12 @@
 
 import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
 import com.kindaboii.journal.features.entries.impl.api.EntriesFeatureApiImpl
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.LocalDataSource
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.LocalDataSourceImpl
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSource
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSourceImpl
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiService
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiServiceImpl
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.RemoteDataSource
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.RemoteDataSourceImpl
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
 import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseCase
 import com.kindaboii.journal.features.entries.impl.presentation.create.CreateEntryViewModel
@@ -16,7 +20,9 @@ import org.koin.dsl.module
 
 val entriesModule = module {
     singleOf(::EntriesFeatureApiImpl) { bind<EntriesFeatureApi>() }
+    singleOf(::EntriesApiServiceImpl) { bind<EntriesApiService>() }
     singleOf(::LocalDataSourceImpl) { bind<LocalDataSource>() }
+    singleOf(::RemoteDataSourceImpl) { bind<RemoteDataSource>() }
     singleOf(::EntryRepository)
     factoryOf(::GetEntriesUseCase)
     viewModelOf(::EntriesViewModel)

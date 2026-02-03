@@ -63,7 +63,10 @@ kotlin {
             implementation(libs.coroutines.extensions)
 
             implementation(project(":common:ui"))
+            implementation(project(":common:network"))
+
             implementation(project(":data:database"))
+
             implementation(project(":features:entries:api"))
             implementation(project(":features:entries:schema"))
         }
