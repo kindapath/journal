@@ -45,12 +45,42 @@ kotlin {
 
 
     sourceSets {
+        val commonMain by getting
+        val jsMain by getting
+        val androidMain by getting
+        val jvmMain by getting
+
+        val iosMain by creating {
+            dependsOn(commonMain)
+        }
+
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
+
+        val nonJsMain by creating {
+            dependsOn(commonMain)
+        }
+
+        androidMain.dependsOn(nonJsMain)
+        iosMain.dependsOn(nonJsMain)
+        jvmMain.dependsOn(nonJsMain)
+
         commonMain.dependencies {
             implementation(libs.coroutines.extensions)
             implementation(libs.kotlinx.serialization.json)
             implementation(project(":features:entries:schema"))
             implementation(libs.sqldelight.runtime)
             implementation(libs.koin.core)
+        }
+
+        nonJsMain.dependencies {
+            implementation(libs.powersync.core)
+            implementation(libs.powersync.integration.sqldelight)
         }
 
         androidMain.dependencies {
@@ -72,6 +102,6 @@ kotlin {
             implementation(npm("sql.js", "1.13.0"))
             implementation(devNpm("copy-webpack-plugin", "13.0.1"))
         }
-
     }
+
 }

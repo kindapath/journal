@@ -2,63 +2,63 @@ import kotlin.Int;
 import kotlin.String;
 import kotlin.collections.List;
 
-CREATE TABLE entryEntity (
+CREATE TABLE entries (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT,
     body TEXT,
-    moodValue INTEGER,
-    moodEmotions TEXT AS List<String>,
-    moodInfluences TEXT AS List<String>,
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT,
-    deletedAt TEXT
+    mood_value INTEGER,
+    mood_emotions TEXT AS List<String>,
+    mood_influences TEXT AS List<String>,
+    created_at TEXT NOT NULL,
+    updated_at TEXT,
+    deleted_at TEXT
 );
 
 insertEntry:
 INSERT OR REPLACE
-INTO entryEntity(
+INTO entries(
     id,
     title,
     body,
-    moodValue,
-    moodEmotions,
-    moodInfluences,
-    createdAt,
-    updatedAt,
-    deletedAt
+    mood_value,
+    mood_emotions,
+    mood_influences,
+    created_at,
+    updated_at,
+    deleted_at
 )
 VALUES ?;
 
 getEntries:
 SELECT *
-FROM entryEntity
-WHERE deletedAt IS NULL
-ORDER BY createdAt DESC;
+FROM entries
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC;
 
 getAllEntries:
 SELECT *
-FROM entryEntity
-ORDER BY createdAt DESC;
+FROM entries
+ORDER BY created_at DESC;
 
 getEntryById:
 SELECT *
-FROM entryEntity
-WHERE id = :id AND deletedAt IS NULL;
+FROM entries
+WHERE id = :id AND deleted_at IS NULL;
 
 updateEntry:
-UPDATE entryEntity
+UPDATE entries
 SET title = :title,
     body = :body,
-    moodValue = :moodValue,
-    moodEmotions = :moodEmotions,
-    moodInfluences = :moodInfluences,
-    updatedAt = :updatedAt,
-    deletedAt = :deletedAt
+    mood_value = :mood_value,
+    mood_emotions = :mood_emotions,
+    mood_influences = :mood_influences,
+    updated_at = :updated_at,
+    deleted_at = :deleted_at
 WHERE id = :id;
 
 deleteEntryById:
-DELETE FROM entryEntity
+DELETE FROM entries
 WHERE id = :id;
 
 deleteAllEntries:
-DELETE FROM entryEntity;
+DELETE FROM entries;

@@ -1,11 +1,17 @@
 ﻿package com.kindaboii.journal.data.database
 
 import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.powersync.DatabaseDriverFactory as PowerSyncDatabaseDriverFactory
+import com.powersync.PowerSyncDatabase
+import com.powersync.integrations.sqldelight.PowerSyncDriver
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
-actual class DatabaseDriverFactory {
-    actual suspend fun createDriver(): SqlDriver {
+actual class DatabaseDriverFactory : PowerSyncDatabaseProvider {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    override val powerSyncDatabase: PowerSyncDatabase by lazy {
         val appFolderName = "JournalApp"
         val dbName = DatabaseConstants.DATABASE_FILE_NAME
 
@@ -16,13 +22,15 @@ actual class DatabaseDriverFactory {
             appFolder.mkdirs()
         }
 
-        val databaseFile = File(appFolder, dbName)
-        val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databaseFile.absolutePath}")
-
-        if (!databaseFile.exists() || databaseFile.length() == 0L) {
-            AppDatabase.Schema.create(driver).await()
-        }
-
-        return driver
+        PowerSyncDatabase(
+            factory = PowerSyncDatabaseDriverFactory(),
+            schema = entriesPowerSyncSchema,
+            dbFilename = dbName,
+            scope = scope,
+            dbDirectory = appFolder.absolutePath + File.separator,
+        )
     }
+
+    actual suspend fun createDriver(): SqlDriver =
+        PowerSyncDriver(powerSyncDatabase, scope)
 }

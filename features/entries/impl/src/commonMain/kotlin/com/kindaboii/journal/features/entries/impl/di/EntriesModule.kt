@@ -3,7 +3,6 @@
 import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
 import com.kindaboii.journal.features.entries.impl.api.EntriesFeatureApiImpl
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSource
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSourceImpl
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiService
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiServiceImpl
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.RemoteDataSource
@@ -21,7 +20,7 @@ import org.koin.dsl.module
 val entriesModule = module {
     singleOf(::EntriesFeatureApiImpl) { bind<EntriesFeatureApi>() }
     singleOf(::EntriesApiServiceImpl) { bind<EntriesApiService>() }
-    singleOf(::LocalDataSourceImpl) { bind<LocalDataSource>() }
+    // LocalDataSource is provided by platform-specific modules (nonJsMain and jsMain)
     singleOf(::RemoteDataSourceImpl) { bind<RemoteDataSource>() }
     singleOf(::EntryRepository)
     factoryOf(::GetEntriesUseCase)

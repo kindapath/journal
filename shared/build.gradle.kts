@@ -10,6 +10,10 @@ plugins {
 }
 
 kotlin {
+    // Включаем стандартную иерархию. Она создаст iosMain автоматически,
+    // так как у нас есть несколько iOS таргетов.
+    applyDefaultHierarchyTemplate()
+
     androidLibrary {
         namespace = "com.kindaboii.journal.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -25,13 +29,16 @@ kotlin {
         }
     }
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "JournalShared"
-            isStatic = true
+    iosArm64()
+    iosSimulatorArm64()
+
+    // Настраиваем фреймворк для всех iOS таргетов сразу
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+        if (name.startsWith("ios")) {
+            binaries.framework {
+                baseName = "JournalShared"
+                isStatic = true
+            }
         }
     }
 
@@ -44,6 +51,22 @@ kotlin {
 
 
     sourceSets {
+        val commonMain by getting
+        val androidMain by getting
+        val iosMain by getting // Теперь iosMain будет найден благодаря applyDefaultHierarchyTemplate
+        val jvmMain by getting
+        val jsMain by getting
+
+        // Создаем наш промежуточный sourceSet для всего, кроме JS
+        val nonJsMain by creating {
+            dependsOn(commonMain)
+        }
+
+        // Подключаем таргеты к nonJsMain
+        androidMain.dependsOn(nonJsMain)
+        iosMain.dependsOn(nonJsMain)
+        jvmMain.dependsOn(nonJsMain)
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -66,9 +89,15 @@ kotlin {
             implementation(project(":features:entries:impl"))
             implementation(project(":common:network"))
         }
+
+        nonJsMain.dependencies {
+            implementation(libs.powersync.connector.supabase)
+        }
+
         androidMain.dependencies {
             implementation(libs.koin.android)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

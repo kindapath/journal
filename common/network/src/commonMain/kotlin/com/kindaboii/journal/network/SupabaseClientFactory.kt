@@ -4,6 +4,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.logging.LogLevel
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.realtime.Realtime
 
 fun createSupabaseClient(): SupabaseClient =
     createSupabaseClient(
@@ -15,6 +16,6 @@ fun createSupabaseClient(): SupabaseClient =
         install(Postgrest) {
             defaultSchema = ApiConfig.SUPABASE_SCHEMA
         }
-
+        install(Realtime)
 
     }

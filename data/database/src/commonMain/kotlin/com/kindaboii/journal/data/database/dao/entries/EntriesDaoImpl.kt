@@ -4,59 +4,55 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.kindaboii.journal.data.database.SharedDatabase
-import com.kindaboii.journal.features.entries.schema.EntryEntity
+import com.kindaboii.journal.features.entries.schema.Entries
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
-    override fun getEntries(): Flow<List<EntryEntity>> = flow {
-        val entriesFlow = db { database ->
-            database.entryDatabaseQueries
-                .getEntries()
-                .asFlow()
-                .mapToList(Dispatchers.Default)
-        }
-        emitAll(entriesFlow)
+
+    private fun databaseFlow() = flow { emit(db { it }) }
+
+    override fun getEntries(): Flow<List<Entries>> = databaseFlow().flatMapLatest { database ->
+        database.entryDatabaseQueries
+            .getEntries()
+            .asFlow()
+            .mapToList(Dispatchers.Default)
     }
 
-    override fun getAllEntries(): Flow<List<EntryEntity>> = flow {
-        val entriesFlow = db { database ->
-            database.entryDatabaseQueries
-                .getAllEntries()
-                .asFlow()
-                .mapToList(Dispatchers.Default)
-        }
-        emitAll(entriesFlow)
+    override fun getAllEntries(): Flow<List<Entries>> = databaseFlow().flatMapLatest { database ->
+        database.entryDatabaseQueries
+            .getAllEntries()
+            .asFlow()
+            .mapToList(Dispatchers.Default)
     }
 
-    override fun getEntryById(id: String): Flow<EntryEntity?> = flow {
-        val entryFlow = db { database ->
-            database.entryDatabaseQueries
-                .getEntryById(id)
-                .asFlow()
-                .mapToOneOrNull(Dispatchers.Default)
-        }
-        emitAll(entryFlow)
+    override fun getEntryById(id: String): Flow<Entries?> = databaseFlow().flatMapLatest { database ->
+        database.entryDatabaseQueries
+            .getEntryById(id)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
     }
 
-    override suspend fun insertEntry(entity: EntryEntity) {
+    override suspend fun insertEntry(entity: Entries) {
         db { database ->
             database.entryDatabaseQueries.insertEntry(entity)
         }
     }
 
-    override suspend fun updateEntry(entity: EntryEntity) {
+    override suspend fun updateEntry(entity: Entries) {
         db { database ->
             database.entryDatabaseQueries.updateEntry(
                 title = entity.title,
                 body = entity.body,
-                moodValue = entity.moodValue,
-                moodEmotions = entity.moodEmotions,
-                moodInfluences = entity.moodInfluences,
-                updatedAt = entity.updatedAt,
-                deletedAt = entity.deletedAt,
+                mood_value = entity.mood_value,
+                mood_emotions = entity.mood_emotions,
+                mood_influences = entity.mood_influences,
+                updated_at = entity.updated_at,
+                deleted_at = entity.deleted_at,
                 id = entity.id,
             )
         }
@@ -74,7 +70,7 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
         }
     }
 
-    override suspend fun replaceAll(entries: List<EntryEntity>) {
+    override suspend fun replaceAll(entries: List<Entries>) {
         db { database ->
             val q = database.entryDatabaseQueries
             q.transaction {
@@ -85,5 +81,4 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
             }
         }
     }
-
 }

@@ -24,9 +24,11 @@ data class EntryDto(
     val moodValue: Long? = null,
 
     @SerialName("mood_emotions")
+    @Serializable(with = JsonStringListSerializer::class)
     val moodEmotions: List<String> = emptyList(),
 
     @SerialName("mood_influences")
+    @Serializable(with = JsonStringListSerializer::class)
     val moodInfluences: List<String> = emptyList(),
 
     @SerialName("created_at")

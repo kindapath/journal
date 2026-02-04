@@ -4,33 +4,33 @@
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
-import com.kindaboii.journal.features.entries.schema.EntryEntity
+import com.kindaboii.journal.features.entries.schema.Entries
 import kotlin.time.Instant
 
-fun EntryEntity.toModel() = Entry(
+fun Entries.toModel() = Entry(
     id = id,
     title = title,
     body = body,
-    mood = moodValue?.let {
+    mood = mood_value?.let {
         Mood(
             value = it,
-            emotions = moodEmotions ?: emptyList(),
-            influences = moodInfluences ?: emptyList()
+            emotions = mood_emotions ?: emptyList(),
+            influences = mood_influences ?: emptyList()
         )
     },
-    createdAt = Instant.parse(createdAt),
-    updatedAt = updatedAt?.let { Instant.parse(it) },
-    deletedAt = deletedAt?.let { Instant.parse(it) }
+    createdAt = Instant.parse(created_at.replace(" ", "T")),
+    updatedAt = updated_at?.let { Instant.parse(it.replace(" ", "T")) },
+    deletedAt = deleted_at?.let { Instant.parse(it.replace(" ", "T")) }
 )
 
-fun Entry.toEntity() = EntryEntity(
+fun Entry.toEntity() = Entries(
     id = id,
     title = title,
     body = body,
-    moodValue = mood?.value,
-    moodEmotions = mood?.emotions,
-    moodInfluences = mood?.influences,
-    createdAt = createdAt.toString(),
-    updatedAt = updatedAt?.toString(),
-    deletedAt = deletedAt?.toString(),
+    mood_value = mood?.value,
+    mood_emotions = mood?.emotions,
+    mood_influences = mood?.influences,
+    created_at = createdAt.toString(),
+    updated_at = updatedAt?.toString(),
+    deleted_at = deletedAt?.toString(),
 )

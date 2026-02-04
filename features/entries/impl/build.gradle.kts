@@ -40,6 +40,22 @@ kotlin {
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
     sourceSets {
+        val commonMain by getting
+        val androidMain by getting
+        val jvmMain by getting
+        val jsMain by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+
+        val nonJsMain by creating {
+            dependsOn(commonMain)
+        }
+
+        androidMain.dependsOn(nonJsMain)
+        jvmMain.dependsOn(nonJsMain)
+        iosArm64Main.dependsOn(nonJsMain)
+        iosSimulatorArm64Main.dependsOn(nonJsMain)
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -69,6 +85,10 @@ kotlin {
 
             implementation(project(":features:entries:api"))
             implementation(project(":features:entries:schema"))
+        }
+
+        nonJsMain.dependencies {
+            implementation(libs.powersync.connector.supabase)
         }
     }
 }

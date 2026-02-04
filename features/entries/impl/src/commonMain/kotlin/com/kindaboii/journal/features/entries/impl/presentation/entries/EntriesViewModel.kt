@@ -3,6 +3,7 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.SyncManager
 import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,11 +14,15 @@ import kotlinx.coroutines.launch
 class EntriesViewModel(
     private val getEntriesUseCase: GetEntriesUseCase,
     private val repository: EntryRepository,
+    private val syncManager: SyncManager,
 ): ViewModel() {
     private val _uiState = MutableStateFlow<EntriesUiState>(EntriesUiState.Loading)
     val uiState: StateFlow<EntriesUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            syncManager.startSync()
+        }
         loadEntries()
     }
 

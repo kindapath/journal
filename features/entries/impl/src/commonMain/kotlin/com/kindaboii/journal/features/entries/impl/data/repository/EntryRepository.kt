@@ -40,6 +40,12 @@ class EntryRepository(
         localDataSource.replaceAll(entries)
     }
 
+    suspend fun refreshFromRemote() {
+        val remoteEntries = runCatching { remoteDataSource.getEntries().first() }.getOrNull()
+            ?: return
+        localDataSource.replaceAll(remoteEntries)
+    }
+
     private fun nowInstant(): Instant =
         Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
 }

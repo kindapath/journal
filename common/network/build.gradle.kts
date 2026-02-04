@@ -42,6 +42,7 @@ kotlin {
             implementation(libs.koin.core)
             api(libs.supabase.core)
             api(libs.supabase.postgrest)
+            api(libs.supabase.realtime)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
