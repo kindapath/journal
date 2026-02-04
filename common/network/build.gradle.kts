@@ -40,6 +40,8 @@ kotlin {
             implementation(libs.ktor.client.logging)
 
             implementation(libs.koin.core)
+            api(libs.supabase.core)
+            api(libs.supabase.postgrest)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)

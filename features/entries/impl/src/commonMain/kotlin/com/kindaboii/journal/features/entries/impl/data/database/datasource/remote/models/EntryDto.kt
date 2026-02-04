@@ -13,9 +13,11 @@ data class EntriesResponse(
 
 @Serializable
 data class EntryDto(
-
+    @SerialName("id")
     val id: String,
+    @SerialName("title")
     val title: String? = null,
+    @SerialName("body")
     val body: String? = null,
 
     @SerialName("mood_value")

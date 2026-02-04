@@ -29,7 +29,11 @@ fun createHttpClient(): HttpClient = HttpClient {
                 println("KtorLogger: $message")
             }
         }
-        level = LogLevel.ALL
+        level = if (ApiConfig.isDebug()) LogLevel.ALL else LogLevel.INFO
+        sanitizeHeader { header ->
+            header.equals("Authorization", ignoreCase = true) ||
+                header.equals("apikey", ignoreCase = true)
+        }
     }
     install(HttpTimeout) {
         connectTimeoutMillis = 10_000
