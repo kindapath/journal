@@ -6,11 +6,6 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-/**
- * NonJS-specific module that provides LocalDataSource using SQLDelight
- * for Android, iOS, and JVM platforms.
- */
 val nonJsEntriesModule = module {
-    // Provide LocalDataSource with SQLDelight-based implementation
     singleOf(::LocalDataSourceImpl) { bind<LocalDataSource>() }
 }

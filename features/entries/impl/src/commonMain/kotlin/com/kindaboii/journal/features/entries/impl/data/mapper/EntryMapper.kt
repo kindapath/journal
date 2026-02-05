@@ -4,6 +4,7 @@
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models.EntryDto
 import com.kindaboii.journal.features.entries.schema.Entries
 import kotlin.time.Instant
 
@@ -33,4 +34,18 @@ fun Entry.toEntity() = Entries(
     created_at = createdAt.toString(),
     updated_at = updatedAt?.toString(),
     deleted_at = deletedAt?.toString(),
+)
+
+
+
+fun Entry.toDto() = EntryDto(
+    id = id,
+    title = title,
+    body = body,
+    moodValue = mood?.value,
+    moodEmotions = mood?.emotions ?: emptyList(),
+    moodInfluences = mood?.influences ?: emptyList(),
+    createdAt = createdAt.toString(),
+    updatedAt = updatedAt?.toString(),
+    deletedAt = deletedAt?.toString(),
 )

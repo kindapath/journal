@@ -2,6 +2,7 @@ package com.kindaboii.journal.features.entries.impl.data.database.datasource.rem
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.utils.JsonStringListSerializer
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -55,16 +56,4 @@ fun EntryDto.toModel() = Entry(
     createdAt = Instant.parse(createdAt),
     updatedAt = updatedAt?.let { Instant.parse(it) },
     deletedAt = deletedAt?.let { Instant.parse(it) },
-)
-
-fun Entry.toDto() = EntryDto(
-    id = id,
-    title = title,
-    body = body,
-    moodValue = mood?.value,
-    moodEmotions = mood?.emotions ?: emptyList(),
-    moodInfluences = mood?.influences ?: emptyList(),
-    createdAt = createdAt.toString(),
-    updatedAt = updatedAt?.toString(),
-    deletedAt = deletedAt?.toString(),
 )

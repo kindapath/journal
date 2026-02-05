@@ -12,30 +12,28 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
+class EntriesDaoImpl(
+    private val db: SharedDatabase
+) : EntriesDao {
 
     private fun databaseFlow() = flow { emit(db { it }) }
 
-    override fun getEntries(): Flow<List<Entries>> = databaseFlow().flatMapLatest { database ->
-        database.entryDatabaseQueries
-            .getEntries()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-    }
+    override fun getEntries(): Flow<List<Entries>> =
+        databaseFlow()
+            .flatMapLatest { database ->
+                database.entryDatabaseQueries
+                    .getEntries()
+                    .asFlow()
+                    .mapToList(Dispatchers.Default)
+            }
 
-    override fun getAllEntries(): Flow<List<Entries>> = databaseFlow().flatMapLatest { database ->
-        database.entryDatabaseQueries
-            .getAllEntries()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-    }
-
-    override fun getEntryById(id: String): Flow<Entries?> = databaseFlow().flatMapLatest { database ->
-        database.entryDatabaseQueries
-            .getEntryById(id)
-            .asFlow()
-            .mapToOneOrNull(Dispatchers.Default)
-    }
+    override fun getEntryById(id: String): Flow<Entries?> =
+        databaseFlow().flatMapLatest { database ->
+            database.entryDatabaseQueries
+                .getEntryById(id)
+                .asFlow()
+                .mapToOneOrNull(Dispatchers.Default)
+        }
 
     override suspend fun insertEntry(entity: Entries) {
         db { database ->
@@ -55,30 +53,6 @@ class EntriesDaoImpl(private val db: SharedDatabase) : EntriesDao {
                 deleted_at = entity.deleted_at,
                 id = entity.id,
             )
-        }
-    }
-
-    override suspend fun deleteEntryById(id: String) {
-        db { database ->
-            database.entryDatabaseQueries.deleteEntryById(id)
-        }
-    }
-
-    override suspend fun deleteAllEntries() {
-        db { database ->
-            database.entryDatabaseQueries.deleteAllEntries()
-        }
-    }
-
-    override suspend fun replaceAll(entries: List<Entries>) {
-        db { database ->
-            val q = database.entryDatabaseQueries
-            q.transaction {
-                q.deleteAllEntries()
-                entries.forEach { entry ->
-                    q.insertEntry(entry)
-                }
-            }
         }
     }
 }

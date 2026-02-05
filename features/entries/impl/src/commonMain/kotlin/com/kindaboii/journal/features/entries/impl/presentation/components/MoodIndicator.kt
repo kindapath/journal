@@ -75,7 +75,7 @@ internal fun moodToColor(
     val clamped = mood.coerceIn(0, 100)
     val t = clamped / 100f
     val palette = listOf(
-        0f to Color(0xFF6B5BCF),    // очень неприятные (фиолетовый)
+        0f to Color(0xFF6B5BCF),    // очень неприятные (фиолетовый) // TODO: move colors to variables common:ui:colors
         0.16f to Color(0xFF6FA9FF), // неприятные (холодный голубой)
         0.33f to Color(0xFF9DD6FF), // чуть неприятные (светло‑голубой)
         0.5f to Color(0xFFCFEAF7),  // нейтральные (ледяной)

@@ -16,6 +16,4 @@ fun initKoin(appDeclaration: KoinApplication.() -> Unit = {}) {
     koinRef = application.koin
 }
 
-fun getKoin(): Koin = koinRef ?: error("Koin is not initialized. Call initKoin() first.")
-
 expect fun platformModule(): Module

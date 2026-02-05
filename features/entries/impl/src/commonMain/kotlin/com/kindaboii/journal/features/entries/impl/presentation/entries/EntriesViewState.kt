@@ -2,12 +2,12 @@
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 
-sealed interface EntriesUiState {
-    data object Loading : EntriesUiState
-    data object Empty : EntriesUiState
+sealed interface EntriesViewState {
+    data object Loading : EntriesViewState
+    data object Empty : EntriesViewState
     data class Content(
         val entries: List<Entry>
-    ) : EntriesUiState
+    ) : EntriesViewState
 }
 
 

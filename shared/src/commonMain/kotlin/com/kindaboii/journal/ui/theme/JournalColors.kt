@@ -2,7 +2,7 @@ package com.kindaboii.journal.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-internal object JournalColors {
+internal object JournalColors { // TODO: move colors to variables common:ui:colors
     val Primary = Color(0xFF5E5CE7)
     val PrimaryOn = Color(0xFFFFFFFF)
 

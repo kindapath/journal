@@ -1,6 +1,6 @@
 package com.kindaboii.journal.di
 
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.PowerSyncSyncManager
+import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.NonJsPowerSyncManager
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.SyncManager
 import com.kindaboii.journal.network.ApiConfig
 import com.powersync.connector.supabase.SupabaseConnector
@@ -25,5 +25,5 @@ internal fun powerSyncModule() = module {
             )
         }
     }
-    singleOf(::PowerSyncSyncManager) { bind<SyncManager>() }
+    singleOf(::NonJsPowerSyncManager) { bind<SyncManager>() }
 }

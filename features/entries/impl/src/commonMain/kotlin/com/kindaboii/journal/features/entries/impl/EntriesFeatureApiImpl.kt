@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.Flow
 class EntriesFeatureApiImpl(
     private val repository: EntryRepository,
 ) : EntriesFeatureApi {
-    override fun observeEntries(): Flow<List<Entry>> = repository.getEntries()
+    override fun getEntries(): Flow<List<Entry>> = repository.getEntries()
 }

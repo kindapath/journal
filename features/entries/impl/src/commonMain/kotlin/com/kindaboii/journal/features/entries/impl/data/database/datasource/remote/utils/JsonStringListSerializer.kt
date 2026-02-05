@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models
+package com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.utils
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -10,9 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
@@ -25,7 +23,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * This serializer handles both cases.
  */
 object JsonStringListSerializer : KSerializer<List<String>> {
-    private val listSerializer = ListSerializer(String.serializer())
+    private val listSerializer = ListSerializer(String.Companion.serializer())
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("JsonStringList")
 
@@ -36,7 +34,7 @@ object JsonStringListSerializer : KSerializer<List<String>> {
             when (element) {
                 is JsonArray -> {
                     // It's already an array, decode normally
-                    Json.decodeFromJsonElement(listSerializer, element)
+                    Json.Default.decodeFromJsonElement(listSerializer, element)
                 }
                 is JsonPrimitive -> {
                     // It's a string, parse it as JSON
@@ -45,7 +43,7 @@ object JsonStringListSerializer : KSerializer<List<String>> {
                         emptyList()
                     } else {
                         try {
-                            Json.decodeFromString(listSerializer, jsonString)
+                            Json.Default.decodeFromString(listSerializer, jsonString)
                         } catch (e: Exception) {
                             // If parsing fails, return empty list
                             emptyList()

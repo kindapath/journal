@@ -32,20 +32,6 @@ class EntryRepository(
         localDataSource.updateEntry(deleted)
     }
 
-    suspend fun deleteAllEntries() {
-        localDataSource.deleteAllEntries()
-    }
-
-    suspend fun replaceAll(entries: List<Entry>) {
-        localDataSource.replaceAll(entries)
-    }
-
-    suspend fun refreshFromRemote() {
-        val remoteEntries = runCatching { remoteDataSource.getEntries().first() }.getOrNull()
-            ?: return
-        localDataSource.replaceAll(remoteEntries)
-    }
-
     private fun nowInstant(): Instant =
         Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
 }
