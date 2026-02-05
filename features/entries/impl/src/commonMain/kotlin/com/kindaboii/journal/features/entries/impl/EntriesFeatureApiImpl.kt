@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.features.entries.impl.api
+package com.kindaboii.journal.features.entries.impl
 
 import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
 import com.kindaboii.journal.features.entries.api.models.Entry

@@ -1,7 +1,7 @@
 ﻿package com.kindaboii.journal.features.entries.impl.di
 
 import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
-import com.kindaboii.journal.features.entries.impl.api.EntriesFeatureApiImpl
+import com.kindaboii.journal.features.entries.impl.EntriesFeatureApiImpl
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSource
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiService
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.EntriesApiServiceImpl
