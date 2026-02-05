@@ -3,6 +3,21 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
 }
 
+val generateApiConfig by tasks.registering(GeneratePropertiesConfigTask::class) {
+    propertiesFile.set(rootProject.file("local.properties"))
+    outputDirectory.set(layout.buildDirectory.dir("generated/apiconfig"))
+    packageName.set("com.kindaboii.journal.network")
+    objectName.set("ApiConfig")
+
+    stringField("SUPABASE_URL", "supabase.url")
+    stringField("SUPABASE_SCHEMA", "supabase.schema", default = "public")
+    stringField("SUPABASE_CLIENT_API_KEY", "supabase.clientApiKey")
+    stringField("POWERSYNC_URL", "powersync.url")
+    stringField("POWERSYNC_DEV_TOKEN", "powersync.devToken", default = "")
+    booleanField("SUPABASE_ANON_AUTH_ENABLED", "supabase.anonAuthEnabled")
+    booleanField("DEBUG", "debug")
+}
+
 kotlin {
     androidLibrary {
         namespace = "com.kindaboii.journal.common.network"
@@ -31,6 +46,9 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            kotlin.srcDir(generateApiConfig.flatMap { it.outputDirectory })
+        }
         commonMain.dependencies {
             implementation(libs.kotlinx.serialization.json)
 
