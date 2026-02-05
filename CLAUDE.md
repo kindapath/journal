@@ -71,6 +71,7 @@ All dependency versions live in `gradle/libs.versions.toml`. Always declare new 
 - Coroutines and Flow are the standard async primitives
 - Prefer composition over inheritance in UI code
 - Only commit when the user explicitly asks — never autonomously
+- Always `git pull` before committing to avoid conflicts with remote changes
 - Commit message format: `type: short description` — types: `feat`, `fix`, `refactor`, `chore`, `docs`
 
 ## Build Commands
