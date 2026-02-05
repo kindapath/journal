@@ -29,7 +29,7 @@ fun createHttpClient(): HttpClient = HttpClient {
                 println("KtorLogger: $message")
             }
         }
-        level = if (ApiConfig.isDebug()) LogLevel.ALL else LogLevel.INFO
+        level = if (ApiConfig.DEBUG) LogLevel.ALL else LogLevel.INFO
         sanitizeHeader { header ->
             header.equals("Authorization", ignoreCase = true) ||
                 header.equals("apikey", ignoreCase = true)

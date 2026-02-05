@@ -39,7 +39,7 @@ class EntriesApiServiceImpl(
             val durationMs = start.elapsedNow().inWholeMilliseconds
             networkLogger.info("Supabase.getEntries success count=${items.size} durationMs=$durationMs")
 
-            if (ApiConfig.isDebug()) {
+            if (ApiConfig.DEBUG) {
                 val simple = items.joinToString(prefix = "[", postfix = "]", separator = ", ") {
                     itemToSimpleString(it)
                 }
@@ -69,7 +69,7 @@ class EntriesApiServiceImpl(
 
             networkLogger.info("Supabase.getEntryById success id=$id durationMs=$durationMs")
 
-            if (ApiConfig.isDebug()) {
+            if (ApiConfig.DEBUG) {
                 val simple = itemToSimpleString(item)
                 networkLogger.debug("Supabase.getEntryById item=$simple")
             }
@@ -87,7 +87,7 @@ class EntriesApiServiceImpl(
 
             networkLogger.info("Supabase.upsertEntry start table=$tableName id=${entry.id}")
 
-            if (ApiConfig.isDebug()) {
+            if (ApiConfig.DEBUG) {
                 val simple = itemToSimpleString(entry)
                 networkLogger.debug("Supabase.upsertEntry payload=$simple")
             }
