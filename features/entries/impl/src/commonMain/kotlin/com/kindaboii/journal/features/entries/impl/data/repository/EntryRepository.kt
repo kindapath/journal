@@ -1,7 +1,7 @@
 package com.kindaboii.journal.features.entries.impl.data.repository
 
 import com.kindaboii.journal.features.entries.api.models.Entry
-import com.kindaboii.journal.features.entries.impl.data.datasource.EntriesDataSource
+import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 
@@ -11,27 +11,27 @@ import kotlin.time.Instant
  * Platform-agnostic - relies on EntriesDataSource abstraction.
  */
 class EntryRepository(
-    private val dataSource: EntriesDataSource,
+    private val commonDataSource: CommonEntriesDataSource,
 ) {
-    fun getEntries(): Flow<List<Entry>> = dataSource.getEntries()
+    fun getEntries(): Flow<List<Entry>> = commonDataSource.getEntries()
 
-    suspend fun getEntryById(id: String): Entry? = dataSource.getEntryById(id)
+    suspend fun getEntryById(id: String): Entry? = commonDataSource.getEntryById(id)
 
     suspend fun insertEntry(entry: Entry) {
-        dataSource.insertEntry(entry)
+        commonDataSource.insertEntry(entry)
     }
 
     suspend fun updateEntry(entry: Entry) {
-        dataSource.updateEntry(entry)
+        commonDataSource.updateEntry(entry)
     }
 
     suspend fun deleteEntryById(id: String) {
-        val existing = dataSource.getEntryById(id) ?: return
+        val existing = commonDataSource.getEntryById(id) ?: return
         val deleted = existing.copy(
             deletedAt = nowInstant(),
             updatedAt = nowInstant(),
         )
-        dataSource.updateEntry(deleted)
+        commonDataSource.updateEntry(deleted)
     }
 
     private fun nowInstant(): Instant =

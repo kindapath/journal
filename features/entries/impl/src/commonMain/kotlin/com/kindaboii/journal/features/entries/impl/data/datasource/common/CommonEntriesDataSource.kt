@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.data.datasource
+package com.kindaboii.journal.features.entries.impl.data.datasource.common
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
  * From the repository's perspective, both implementations provide the same semantics:
  * reactive data access with automatic synchronization.
  */
-interface EntriesDataSource {
+interface CommonEntriesDataSource {
     /**
      * Returns a reactive stream of all non-deleted entries.
      * Automatically updates when entries change.

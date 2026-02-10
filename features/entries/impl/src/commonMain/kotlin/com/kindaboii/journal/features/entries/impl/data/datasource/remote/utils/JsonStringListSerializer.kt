@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.utils
+package com.kindaboii.journal.features.entries.impl.data.datasource.remote.utils
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -23,7 +23,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * This serializer handles both cases.
  */
 object JsonStringListSerializer : KSerializer<List<String>> {
-    private val listSerializer = ListSerializer(String.Companion.serializer())
+    private val listSerializer = ListSerializer(String.serializer())
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("JsonStringList")
 
@@ -34,7 +34,7 @@ object JsonStringListSerializer : KSerializer<List<String>> {
             when (element) {
                 is JsonArray -> {
                     // It's already an array, decode normally
-                    Json.Default.decodeFromJsonElement(listSerializer, element)
+                    Json.decodeFromJsonElement(listSerializer, element)
                 }
                 is JsonPrimitive -> {
                     // It's a string, parse it as JSON
@@ -43,7 +43,7 @@ object JsonStringListSerializer : KSerializer<List<String>> {
                         emptyList()
                     } else {
                         try {
-                            Json.Default.decodeFromString(listSerializer, jsonString)
+                            Json.decodeFromString(listSerializer, jsonString)
                         } catch (e: Exception) {
                             // If parsing fails, return empty list
                             emptyList()

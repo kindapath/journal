@@ -2,7 +2,6 @@ package com.kindaboii.journal.di
 
 import com.kindaboii.journal.network.ApiConfig
 import com.powersync.connector.supabase.SupabaseConnector
-import kotlinx.coroutines.runBlocking
 import org.koin.dsl.module
 
 internal fun powerSyncModule() = module {

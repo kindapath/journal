@@ -1,9 +1,10 @@
-package com.kindaboii.journal.features.entries.impl.data.datasource
+package com.kindaboii.journal.features.entries.impl.data
 
 import com.kindaboii.journal.data.database.dao.entries.EntriesDao
-import com.kindaboii.journal.features.entries.impl.data.mapper.toModel
-import com.kindaboii.journal.features.entries.impl.data.mapper.toEntity
 import com.kindaboii.journal.features.entries.api.models.Entry
+import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
+import com.kindaboii.journal.features.entries.impl.data.mapper.toEntity
+import com.kindaboii.journal.features.entries.impl.data.mapper.toModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -11,9 +12,9 @@ import kotlinx.coroutines.flow.map
  * NonJS implementation using SQLDelight + PowerSync.
  * Provides offline-first storage with automatic bidirectional sync to Supabase.
  */
-class EntriesDataSourceImpl(
+class CommonEntriesDataSourceImpl(
     private val entriesDao: EntriesDao
-) : EntriesDataSource {
+) : CommonEntriesDataSource {
     override fun getEntries(): Flow<List<Entry>> =
         entriesDao
             .getEntries()

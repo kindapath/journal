@@ -4,7 +4,7 @@
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models.EntryDto
+import com.kindaboii.journal.features.entries.impl.data.datasource.remote.models.EntryDto
 import com.kindaboii.journal.features.entries.schema.Entries
 import kotlin.time.Instant
 

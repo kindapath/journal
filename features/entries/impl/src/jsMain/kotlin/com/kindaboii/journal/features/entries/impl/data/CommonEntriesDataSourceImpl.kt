@@ -1,8 +1,9 @@
-package com.kindaboii.journal.features.entries.impl.data.datasource
+package com.kindaboii.journal.features.entries.impl.data
 
 import com.kindaboii.journal.features.entries.api.models.Entry
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models.EntryDto
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models.toModel
+import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
+import com.kindaboii.journal.features.entries.impl.data.datasource.remote.models.EntryDto
+import com.kindaboii.journal.features.entries.impl.data.datasource.remote.models.toModel
 import com.kindaboii.journal.features.entries.impl.data.mapper.toDto
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -26,9 +27,9 @@ import kotlinx.coroutines.launch
  * No offline storage - provides online-only access with Realtime subscriptions
  * for automatic updates when data changes on the server.
  */
-class EntriesDataSourceImpl(
+class CommonEntriesDataSourceImpl(
     private val supabase: SupabaseClient
-) : EntriesDataSource {
+) : CommonEntriesDataSource {
 
     // Shared scope for Realtime subscriptions
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

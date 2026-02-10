@@ -1,16 +1,12 @@
-package com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models
+package com.kindaboii.journal.features.entries.impl.data.datasource.remote.models
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.api.models.Mood
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.utils.JsonStringListSerializer
+import com.kindaboii.journal.features.entries.impl.data.datasource.remote.utils.JsonStringListSerializer
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class EntriesResponse(
-    val entries: List<EntryDto> = emptyList(),
-)
 
 @Serializable
 data class EntryDto(
