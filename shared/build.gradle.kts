@@ -86,6 +86,7 @@ kotlin {
             implementation(libs.jetbrains.navigation3.ui)
 
             implementation(project(":data:database"))
+            implementation(project(":features:entries:api"))
             implementation(project(":features:entries:impl"))
             implementation(project(":common:network"))
         }
