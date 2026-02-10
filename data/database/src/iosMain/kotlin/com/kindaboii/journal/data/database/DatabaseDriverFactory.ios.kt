@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 actual class DatabaseDriverFactory : PowerSyncDatabaseProvider {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     override val powerSyncDatabase: PowerSyncDatabase by lazy {
         PowerSyncDatabase(
             factory = PowerSyncDatabaseDriverFactory(),

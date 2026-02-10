@@ -1,49 +1,37 @@
 package com.kindaboii.journal.features.entries.impl.data.repository
 
 import com.kindaboii.journal.features.entries.api.models.Entry
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSource
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.RemoteDataSource
+import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlin.time.Instant
 
+/**
+ * Repository for entry management.
+ * Implements domain logic like soft-delete pattern.
+ * Platform-agnostic - relies on EntriesDataSource abstraction.
+ */
 class EntryRepository(
-    private val localDataSource: LocalDataSource,
-    private val remoteDataSource: RemoteDataSource,
+    private val commonDataSource: CommonEntriesDataSource,
 ) {
-    fun getEntries(): Flow<List<Entry>> = localDataSource.getEntries()
+    fun getEntries(): Flow<List<Entry>> = commonDataSource.getEntries()
 
-    fun getEntryById(id: String): Flow<Entry?> = localDataSource.getEntryById(id)
+    suspend fun getEntryById(id: String): Entry? = commonDataSource.getEntryById(id)
 
     suspend fun insertEntry(entry: Entry) {
-        localDataSource.insertEntry(entry)
+        commonDataSource.insertEntry(entry)
     }
 
     suspend fun updateEntry(entry: Entry) {
-        localDataSource.updateEntry(entry)
+        commonDataSource.updateEntry(entry)
     }
 
     suspend fun deleteEntryById(id: String) {
-        val existing = localDataSource.getEntryById(id).first() ?: return
+        val existing = commonDataSource.getEntryById(id) ?: return
         val deleted = existing.copy(
             deletedAt = nowInstant(),
             updatedAt = nowInstant(),
         )
-        localDataSource.updateEntry(deleted)
-    }
-
-    suspend fun deleteAllEntries() {
-        localDataSource.deleteAllEntries()
-    }
-
-    suspend fun replaceAll(entries: List<Entry>) {
-        localDataSource.replaceAll(entries)
-    }
-
-    suspend fun refreshFromRemote() {
-        val remoteEntries = runCatching { remoteDataSource.getEntries().first() }.getOrNull()
-            ?: return
-        localDataSource.replaceAll(remoteEntries)
+        commonDataSource.updateEntry(deleted)
     }
 
     private fun nowInstant(): Instant =

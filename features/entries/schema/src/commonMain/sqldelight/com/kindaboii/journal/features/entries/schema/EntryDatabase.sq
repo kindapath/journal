@@ -35,11 +35,6 @@ FROM entries
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC;
 
-getAllEntries:
-SELECT *
-FROM entries
-ORDER BY created_at DESC;
-
 getEntryById:
 SELECT *
 FROM entries
@@ -55,10 +50,3 @@ SET title = :title,
     updated_at = :updated_at,
     deleted_at = :deleted_at
 WHERE id = :id;
-
-deleteEntryById:
-DELETE FROM entries
-WHERE id = :id;
-
-deleteAllEntries:
-DELETE FROM entries;

@@ -22,7 +22,7 @@ sealed interface CreateEntryViewState {
             body = "",
             mood = Mood(
                 value = 50,
-                emotions = listOf("Calm", "Focused", "Hopeful"),
+                emotions = listOf("Calm", "Focused", "Hopeful"), // TODO: replace with actual feature
                 influences = listOf("Work", "Rest", "Reflection"),
             ),
             isSaving = false,

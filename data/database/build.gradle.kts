@@ -72,6 +72,7 @@ kotlin {
         nonJsMain.dependencies {
             implementation(libs.powersync.core)
             implementation(libs.powersync.integration.sqldelight)
+            implementation(libs.powersync.connector.supabase)
         }
 
         androidMain.dependencies {

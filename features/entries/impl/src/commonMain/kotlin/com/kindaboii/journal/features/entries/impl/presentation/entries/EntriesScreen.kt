@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
@@ -94,7 +95,7 @@ fun EntriesScreen(
     onEditEntry: (String) -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
-    val uiState by viewModel.uiState.collectAsState()
+    val viewState by viewModel.viewState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -104,14 +105,14 @@ fun EntriesScreen(
         withLayoutType { layoutType ->
             when (layoutType) {
                 LayoutType.Expanded -> EntriesExpandedScreen(
-                    uiState = uiState,
+                    viewState = viewState,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
-                    uiState = uiState,
+                    viewState = viewState,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -123,14 +124,14 @@ fun EntriesScreen(
 
 @Composable
 private fun EntriesExpandedScreen(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
-            uiState = uiState,
+            viewState = viewState,
             layoutType = LayoutType.Expanded,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
@@ -141,13 +142,13 @@ private fun EntriesExpandedScreen(
 
 @Composable
 private fun EntriesCompactScreen(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
     EntriesScaffold(
-        uiState = uiState,
+        viewState = viewState,
         layoutType = LayoutType.Compact,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
@@ -158,7 +159,7 @@ private fun EntriesCompactScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesScaffold(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     layoutType: LayoutType,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
@@ -177,7 +178,7 @@ private fun EntriesScaffold(
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
     ) { paddingValues ->
         EntriesContent(
-            uiState = uiState,
+            viewState = viewState,
             layoutType = layoutType,
             paddingValues = paddingValues,
             scrollBehavior = scrollBehavior,
@@ -245,7 +246,7 @@ private fun EntriesTopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesContent(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     layoutType: LayoutType,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
@@ -255,8 +256,8 @@ private fun EntriesContent(
     val listState = remember { LazyListState() }
 
     // TODO: wtf i dont know, change later
-    val listChangeKey = when (uiState) {
-        is EntriesUiState.Content -> uiState.entries.firstOrNull()?.id to uiState.entries.size
+    val listChangeKey = when (viewState) {
+        is EntriesViewState.Content -> viewState.entries.firstOrNull()?.id to viewState.entries.size
         else -> null
     }
     LaunchedEffect(listChangeKey) {
@@ -268,14 +269,14 @@ private fun EntriesContent(
 
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
-        targetState = uiState::class,
+        targetState = viewState::class,
         label = "entries_state",
     ) {
-        when (uiState) {
-            EntriesUiState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
-            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
-            is EntriesUiState.Content -> EntriesListCompact(
-                entries = uiState.entries,
+        when (viewState) {
+            EntriesViewState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
+            EntriesViewState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
+            is EntriesViewState.Content -> EntriesListCompact(
+                entries = viewState.entries,
                 maxWidth = maxWidth,
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
@@ -628,20 +629,17 @@ private fun EntriesLoadingState(
 
 @Composable
 private fun appBackgroundBrush(): Brush {
-
-    val darkTheme = isSystemInDarkTheme()
-
-    val colors = if (darkTheme) {
+    val colors = if (isSystemInDarkTheme()) {
         listOf(
-            Color(0xFF0C0F1F),
-            Color(0xFF362644),
-            Color(0xFF5F3C69),
+            JournalColors.BackgroundDark,
+            JournalColors.SurfaceDark,
+            JournalColors.SecondaryDark,
         )
     } else {
         listOf(
-            Color(0xFFF8F6F5),
-            Color(0xFFFAF3F3),
-            Color(0xFFF4EFF5),
+            JournalColors.BackgroundLight,
+            JournalColors.SurfaceVariantLight,
+            JournalColors.SurfaceTintLight,
         )
     }
     return Brush.verticalGradient(colors = colors)

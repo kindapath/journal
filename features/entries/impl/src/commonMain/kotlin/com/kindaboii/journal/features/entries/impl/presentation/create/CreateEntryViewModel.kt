@@ -8,7 +8,6 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import androidx.lifecycle.ViewModel
@@ -22,6 +21,8 @@ class CreateEntryViewModel(
 ) : ViewModel() {
     private val _viewState = MutableStateFlow<CreateEntryViewState>(CreateEntryViewState.Empty)
     val viewState: StateFlow<CreateEntryViewState> = _viewState.asStateFlow()
+
+
     private var editingEntry: Entry? = null
     private var loadJob: Job? = null
 
@@ -31,7 +32,7 @@ class CreateEntryViewModel(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             runCatching {
-                repository.getEntryById(entryId).firstOrNull()
+                repository.getEntryById(entryId)
             }
                 .onSuccess { entry ->
                     editingEntry = entry
@@ -42,7 +43,7 @@ class CreateEntryViewModel(
                                 entryId = entry.id,
                                 title = entry.title.orEmpty(),
                                 body = entry.body.orEmpty(),
-                                mood = entry.mood ?: defaultMood(),
+                                mood = entry.mood ?: defaultMood(),  // TODO: replace with actual feature
                                 isSaving = it.data.isSaving,
                             )
                         }
@@ -118,7 +119,7 @@ class CreateEntryViewModel(
         )
     }
 
-    private fun defaultMood(): Mood = Mood(
+    private fun defaultMood(): Mood = Mood(  // TODO: replace with actual feature
         value = 50,
         emotions = listOf("Calm", "Focused", "Hopeful"),
         influences = listOf("Work", "Rest", "Reflection"),

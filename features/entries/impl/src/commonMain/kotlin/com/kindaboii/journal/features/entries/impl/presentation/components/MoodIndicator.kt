@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
+import com.kindaboii.journal.common.colors.JournalColors
 import kotlin.math.min
 
 @Composable
@@ -75,13 +76,13 @@ internal fun moodToColor(
     val clamped = mood.coerceIn(0, 100)
     val t = clamped / 100f
     val palette = listOf(
-        0f to Color(0xFF6B5BCF),    // очень неприятные (фиолетовый)
-        0.16f to Color(0xFF6FA9FF), // неприятные (холодный голубой)
-        0.33f to Color(0xFF9DD6FF), // чуть неприятные (светло‑голубой)
-        0.5f to Color(0xFFCFEAF7),  // нейтральные (ледяной)
-        0.66f to Color(0xFF9EDB8B), // частично приятные (мягкий зелёный)
-        0.83f to Color(0xFFF0C56B), // приятные (тёплый песочный)
-        1f to Color(0xFFF5A354),    // очень приятные (тёплый оранжевый)
+        0f to JournalColors.MoodVeryUnpleasant,
+        0.16f to JournalColors.MoodUnpleasant,
+        0.33f to JournalColors.MoodSlightlyUnpleasant,
+        0.5f to JournalColors.MoodNeutral,
+        0.66f to JournalColors.MoodSlightlyPleasant,
+        0.83f to JournalColors.MoodPleasant,
+        1f to JournalColors.MoodVeryPleasant,
     )
     for (i in 0 until palette.lastIndex) {
         val (t0, c0) = palette[i]
