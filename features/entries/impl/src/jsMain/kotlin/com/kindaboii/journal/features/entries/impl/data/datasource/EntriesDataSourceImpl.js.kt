@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.data.database.datasource.local
+package com.kindaboii.journal.features.entries.impl.data.datasource
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.models.EntryDto
@@ -9,6 +9,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,18 +18,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
 /**
- * JS-specific implementation using Supabase client directly.
- * No SQLDelight, no offline storage - direct Supabase calls.
- * Implements Realtime subscriptions for automatic updates.
+ * JS implementation using Supabase client directly.
+ * No offline storage - provides online-only access with Realtime subscriptions
+ * for automatic updates when data changes on the server.
  */
-class LocalDataSourceImpl(
+class EntriesDataSourceImpl(
     private val supabase: SupabaseClient
-) : LocalDataSource {
+) : EntriesDataSource {
 
     // Shared scope for Realtime subscriptions
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -46,6 +46,9 @@ class LocalDataSourceImpl(
                     .sortedByDescending { it.createdAt }
 
                 send(entries)
+            } catch (e: CancellationException) {
+                // Re-throw cancellation exceptions - they're used for flow control
+                throw e
             } catch (e: Exception) {
                 console.error("Error fetching entries:", e)
                 send(emptyList())
@@ -106,9 +109,9 @@ class LocalDataSourceImpl(
 
     override fun getEntries(): Flow<List<Entry>> = entriesFlow
 
-    override fun getEntryById(id: String): Flow<Entry?> = flow {
+    override suspend fun getEntryById(id: String): Entry? {
         try {
-            val entry = supabase.from("entries")
+            return supabase.from("entries")
                 .select {
                     filter {
                         eq("id", id)
@@ -116,11 +119,12 @@ class LocalDataSourceImpl(
                 }
                 .decodeSingleOrNull<EntryDto>()
                 ?.toModel()
-
-            emit(entry)
+        } catch (e: CancellationException) {
+            // Re-throw cancellation exceptions - they're used for flow control
+            throw e
         } catch (e: Exception) {
             console.error("Error fetching entry by id:", e)
-            emit(null)
+            return null
         }
     }
 
@@ -128,6 +132,8 @@ class LocalDataSourceImpl(
         try {
             supabase.from("entries")
                 .insert(entry.toDto())
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             console.error("Error inserting entry:", e)
             throw e
@@ -142,6 +148,8 @@ class LocalDataSourceImpl(
                         eq("id", entry.id)
                     }
                 }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             console.error("Error updating entry:", e)
             throw e

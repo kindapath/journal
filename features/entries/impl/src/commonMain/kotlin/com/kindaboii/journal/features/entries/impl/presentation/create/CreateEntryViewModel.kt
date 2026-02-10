@@ -8,7 +8,6 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import androidx.lifecycle.ViewModel
@@ -33,7 +32,7 @@ class CreateEntryViewModel(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             runCatching {
-                repository.getEntryById(entryId).firstOrNull()
+                repository.getEntryById(entryId)
             }
                 .onSuccess { entry ->
                     editingEntry = entry

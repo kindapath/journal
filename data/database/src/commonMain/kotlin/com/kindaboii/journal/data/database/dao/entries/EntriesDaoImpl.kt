@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,12 +28,13 @@ class EntriesDaoImpl(
                     .mapToList(Dispatchers.Default)
             }
 
-    override fun getEntryById(id: String): Flow<Entries?> =
-        databaseFlow().flatMapLatest { database ->
+    override suspend fun getEntryById(id: String): Entries? =
+        db { database ->
             database.entryDatabaseQueries
                 .getEntryById(id)
                 .asFlow()
                 .mapToOneOrNull(Dispatchers.Default)
+                .first()
         }
 
     override suspend fun insertEntry(entity: Entries) {

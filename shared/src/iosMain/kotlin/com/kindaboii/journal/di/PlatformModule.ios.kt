@@ -7,7 +7,7 @@ import org.koin.dsl.module
 
 actual fun platformModule() = module {
     single { DatabaseDriverFactory() }
-    single<PowerSyncDatabaseProvider> { get<DatabaseDriverFactory>() } // TODO: looks weird
-    includes(powerSyncModule()) // TODO: looks weird
+    single<PowerSyncDatabaseProvider> { get<DatabaseDriverFactory>() }
+    includes(powerSyncModule())
     includes(nonJsEntriesModule)
 }

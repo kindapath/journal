@@ -1,35 +1,37 @@
 package com.kindaboii.journal.features.entries.impl.data.repository
 
 import com.kindaboii.journal.features.entries.api.models.Entry
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.local.LocalDataSource
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.RemoteDataSource
+import com.kindaboii.journal.features.entries.impl.data.datasource.EntriesDataSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlin.time.Instant
 
+/**
+ * Repository for entry management.
+ * Implements domain logic like soft-delete pattern.
+ * Platform-agnostic - relies on EntriesDataSource abstraction.
+ */
 class EntryRepository(
-    private val localDataSource: LocalDataSource,
-    private val remoteDataSource: RemoteDataSource,
+    private val dataSource: EntriesDataSource,
 ) {
-    fun getEntries(): Flow<List<Entry>> = localDataSource.getEntries()
+    fun getEntries(): Flow<List<Entry>> = dataSource.getEntries()
 
-    fun getEntryById(id: String): Flow<Entry?> = localDataSource.getEntryById(id)
+    suspend fun getEntryById(id: String): Entry? = dataSource.getEntryById(id)
 
     suspend fun insertEntry(entry: Entry) {
-        localDataSource.insertEntry(entry)
+        dataSource.insertEntry(entry)
     }
 
     suspend fun updateEntry(entry: Entry) {
-        localDataSource.updateEntry(entry)
+        dataSource.updateEntry(entry)
     }
 
     suspend fun deleteEntryById(id: String) {
-        val existing = localDataSource.getEntryById(id).first() ?: return
+        val existing = dataSource.getEntryById(id) ?: return
         val deleted = existing.copy(
             deletedAt = nowInstant(),
             updatedAt = nowInstant(),
         )
-        localDataSource.updateEntry(deleted)
+        dataSource.updateEntry(deleted)
     }
 
     private fun nowInstant(): Instant =
