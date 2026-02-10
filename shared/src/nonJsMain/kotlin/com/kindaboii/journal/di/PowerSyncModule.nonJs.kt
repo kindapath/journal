@@ -32,15 +32,6 @@ internal fun powerSyncModule() = module {
             )
         }
 
-        // Handle anonymous login if needed
-        if (ApiConfig.POWERSYNC_DEV_TOKEN.isBlank() && ApiConfig.SUPABASE_ANON_AUTH_ENABLED) {
-            runBlocking {
-                runCatching {
-                    connector.loginAnonymously()
-                }
-            }
-        }
-
         connector
     }
 }

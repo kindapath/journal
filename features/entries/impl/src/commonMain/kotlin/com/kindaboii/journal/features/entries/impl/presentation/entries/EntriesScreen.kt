@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
@@ -628,20 +629,17 @@ private fun EntriesLoadingState(
 
 @Composable
 private fun appBackgroundBrush(): Brush {
-
-    val darkTheme = isSystemInDarkTheme()
-
-    val colors = if (darkTheme) {
+    val colors = if (isSystemInDarkTheme()) {
         listOf(
-            Color(0xFF0C0F1F),
-            Color(0xFF362644),
-            Color(0xFF5F3C69),
+            JournalColors.BackgroundDark,
+            JournalColors.SurfaceDark,
+            JournalColors.SecondaryDark,
         )
     } else {
         listOf(
-            Color(0xFFF8F6F5),
-            Color(0xFFFAF3F3),
-            Color(0xFFF4EFF5),
+            JournalColors.BackgroundLight,
+            JournalColors.SurfaceVariantLight,
+            JournalColors.SurfaceTintLight,
         )
     }
     return Brush.verticalGradient(colors = colors)
