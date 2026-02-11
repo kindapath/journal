@@ -7,7 +7,7 @@ object JournalColors {
     val PrimaryOn = Color(0xFFFFFFFF)
 
     val SecondaryLight = Color(0xFF5755D7)
-    val BackgroundLight = Color(0xFFF8F6F5)
+    val BackgroundLight = Color(0xFFFFFFFF)
     val BackgroundOnLight = Color(0xFF000000)
     val SurfaceLight = Color(0xFFFFFFFF)
     val SurfaceOnLight = Color(0xFF000000)

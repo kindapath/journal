@@ -1,13 +1,15 @@
-package com.kindaboii.journal.features.entries.impl.presentation.components
+﻿package com.kindaboii.journal.features.entries.impl.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,11 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Instant  
+import kotlin.time.Instant
 
 @Composable
 fun MoodHeaderBar(
@@ -59,7 +59,7 @@ fun MoodHeaderBar(
             modifier = Modifier.padding(start = 12.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
-            val emotionsText = emotions.take(2).joinToString(", ")
+            val emotionsText = emotions.take(2).joinToString(", ").ifBlank { moodMomentLabel(mood) }
             val influencesText = influences.take(2).let { items ->
                 if (influences.size > 2) "${items.joinToString(", ")} и другие"
                 else items.joinToString(", ")
@@ -76,17 +76,19 @@ fun MoodHeaderBar(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = influencesText,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.sp,
-                    lineHeight = 12.sp,
-                ),
-                fontWeight = FontWeight.Normal,
-                color = Color.White.copy(alpha = 0.52f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (influencesText.isNotBlank()) {
+                Text(
+                    text = influencesText,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                    ),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White.copy(alpha = 0.52f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 text = "Эмоция · $timeText",
                 style = MaterialTheme.typography.labelSmall.copy(
@@ -107,4 +109,14 @@ private fun formatTime(time: Instant): String {
     val hh = local.hour.toString().padStart(2, '0')
     val mm = local.minute.toString().padStart(2, '0')
     return "$hh:$mm"
+}
+
+private fun moodMomentLabel(mood: Long): String = when {
+    mood <= 14 -> "Очень неприятный момент"
+    mood <= 28 -> "Неприятный момент"
+    mood <= 42 -> "Слегка неприятный момент"
+    mood <= 57 -> "Нейтральный момент"
+    mood <= 71 -> "Слегка приятный момент"
+    mood <= 85 -> "Приятный момент"
+    else -> "Очень приятный момент"
 }

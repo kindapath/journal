@@ -43,7 +43,8 @@ class CreateEntryViewModel(
                                 entryId = entry.id,
                                 title = entry.title.orEmpty(),
                                 body = entry.body.orEmpty(),
-                                mood = entry.mood ?: defaultMood(),  // TODO: replace with actual feature
+                                mood = entry.mood ?: defaultMood(),
+                                hasMoodCheckIn = entry.mood != null,
                                 isSaving = it.data.isSaving,
                             )
                         }
@@ -65,7 +66,16 @@ class CreateEntryViewModel(
     }
 
     fun onMoodChange(mood: Mood) {
-        _viewState.update { it.data.copy(mood = mood) }
+        _viewState.update { it.data.copy(mood = mood, hasMoodCheckIn = true) }
+    }
+
+    fun onMoodClear() {
+        _viewState.update {
+            it.data.copy(
+                mood = defaultMood(),
+                hasMoodCheckIn = false,
+            )
+        }
     }
 
     fun onDone(onSuccess: () -> Unit) {
@@ -93,7 +103,7 @@ class CreateEntryViewModel(
         val now = nowInstant()
         val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
         val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
-        val mood = _viewState.value.data.mood
+        val mood = if (_viewState.value.data.hasMoodCheckIn) _viewState.value.data.mood else null
         return Entry(
             id = Uuid.random().toString(),
             title = trimmedTitle,
@@ -109,7 +119,7 @@ class CreateEntryViewModel(
         val now = nowInstant()
         val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
         val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
-        val mood = _viewState.value.data.mood
+        val mood = if (_viewState.value.data.hasMoodCheckIn) _viewState.value.data.mood else null
         return existing.copy(
             title = trimmedTitle,
             body = trimmedBody,
@@ -119,10 +129,10 @@ class CreateEntryViewModel(
         )
     }
 
-    private fun defaultMood(): Mood = Mood(  // TODO: replace with actual feature
+    private fun defaultMood(): Mood = Mood(
         value = 50,
-        emotions = listOf("Calm", "Focused", "Hopeful"),
-        influences = listOf("Work", "Rest", "Reflection"),
+        emotions = emptyList(),
+        influences = emptyList(),
     )
 
     private fun nowInstant(): Instant =
