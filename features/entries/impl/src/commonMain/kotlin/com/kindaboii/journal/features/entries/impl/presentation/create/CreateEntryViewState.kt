@@ -10,6 +10,7 @@ sealed interface CreateEntryViewState {
         val title: String,
         val body: String,
         val mood: Mood,
+        val hasMoodCheckIn: Boolean,
         val isSaving: Boolean,
     ) : CreateEntryViewState {
         override val data: Data = this
@@ -22,9 +23,10 @@ sealed interface CreateEntryViewState {
             body = "",
             mood = Mood(
                 value = 50,
-                emotions = listOf("Calm", "Focused", "Hopeful"), // TODO: replace with actual feature
-                influences = listOf("Work", "Rest", "Reflection"),
+                emotions = emptyList(),
+                influences = emptyList(),
             ),
+            hasMoodCheckIn = false,
             isSaving = false,
         )
     }
