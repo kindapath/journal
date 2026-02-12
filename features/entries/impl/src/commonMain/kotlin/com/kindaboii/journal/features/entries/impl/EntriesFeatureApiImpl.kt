@@ -13,7 +13,7 @@ class EntriesFeatureApiImpl(
     override fun getEntries(): Flow<List<Entry>> = repository.getEntries()
 
     @Composable
-    override fun EntriesNavigation() {
-        EntriesNavigationImpl()
+    override fun EntriesNavigation(onSignOut: () -> Unit) {
+        EntriesNavigationImpl(onSignOut = onSignOut)
     }
 }

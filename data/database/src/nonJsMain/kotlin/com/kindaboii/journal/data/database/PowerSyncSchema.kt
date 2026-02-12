@@ -12,6 +12,7 @@ internal val entriesPowerSyncSchema: Schema =
             Table(
                 ENTRIES_TABLE,
                 listOf(
+                    Column.text("user_id"),
                     Column.text("title"),
                     Column.text("body"),
                     Column.integer("mood_value"),

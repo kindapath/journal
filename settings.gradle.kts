@@ -43,6 +43,8 @@ include(":data:database")
 include(":features:entries:api")
 include(":features:entries:impl")
 include(":features:entries:schema")
+include(":features:auth:api")
+include(":features:auth:impl")
 
 include(":common:ui")
 include(":common:network")

@@ -4,6 +4,7 @@ import kotlin.collections.List;
 
 CREATE TABLE entries (
     id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL,
     title TEXT,
     body TEXT,
     mood_value INTEGER,
@@ -18,6 +19,7 @@ insertEntry:
 INSERT OR REPLACE
 INTO entries(
     id,
+    user_id,
     title,
     body,
     mood_value,
@@ -44,6 +46,7 @@ updateEntry:
 UPDATE entries
 SET title = :title,
     body = :body,
+    user_id = :user_id,
     mood_value = :mood_value,
     mood_emotions = :mood_emotions,
     mood_influences = :mood_influences,

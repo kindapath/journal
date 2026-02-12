@@ -10,6 +10,7 @@ import kotlin.time.Instant
 
 fun Entries.toModel() = Entry(
     id = id,
+    userId = user_id,
     title = title,
     body = body,
     mood = mood_value?.let {
@@ -26,6 +27,7 @@ fun Entries.toModel() = Entry(
 
 fun Entry.toEntity() = Entries(
     id = id,
+    user_id = userId,
     title = title,
     body = body,
     mood_value = mood?.value,
@@ -40,6 +42,7 @@ fun Entry.toEntity() = Entries(
 
 fun Entry.toDto() = EntryDto(
     id = id,
+    userId = userId,
     title = title,
     body = body,
     moodValue = mood?.value,

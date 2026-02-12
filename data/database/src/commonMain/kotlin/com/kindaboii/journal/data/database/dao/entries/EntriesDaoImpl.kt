@@ -48,6 +48,7 @@ class EntriesDaoImpl(
             database.entryDatabaseQueries.updateEntry(
                 title = entity.title,
                 body = entity.body,
+                user_id = entity.user_id,
                 mood_value = entity.mood_value,
                 mood_emotions = entity.mood_emotions,
                 mood_influences = entity.mood_influences,

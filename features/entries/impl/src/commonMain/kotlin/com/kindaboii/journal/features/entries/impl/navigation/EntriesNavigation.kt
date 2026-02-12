@@ -28,7 +28,9 @@ private val navConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun EntriesNavigation() {
+fun EntriesNavigation(
+    onSignOut: () -> Unit,
+) {
     val backStack = rememberNavBackStack(navConfig, EntriesRoute)
 
     NavDisplay(
@@ -66,6 +68,7 @@ fun EntriesNavigation() {
         entryProvider = entryProvider {
             entry<EntriesRoute> {
                 EntriesScreen(
+                    onSignOut = onSignOut,
                     onAddEntry = {
                         if (backStack.lastOrNull() != CreateEntryRoute()) {
                             backStack.add(CreateEntryRoute())

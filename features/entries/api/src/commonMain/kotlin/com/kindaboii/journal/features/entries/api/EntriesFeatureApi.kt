@@ -8,5 +8,5 @@ interface EntriesFeatureApi {
     fun getEntries(): Flow<List<Entry>>
 
     @Composable
-    fun EntriesNavigation()
+    fun EntriesNavigation(onSignOut: () -> Unit)
 }
