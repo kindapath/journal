@@ -21,6 +21,7 @@ class AppLifecycleManager(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var authObserverJob: Job? = null
     private var isSyncRunning = false
+    private var currentSyncUserId: String? = null
 
     /**
      * Called when the app starts.
@@ -35,6 +36,11 @@ class AppLifecycleManager(
                         if (!isSyncRunning) {
                             syncManager.startSync()
                             isSyncRunning = true
+                            currentSyncUserId = authState.userId
+                        } else if (currentSyncUserId != authState.userId) {
+                            syncManager.stopSync()
+                            syncManager.startSync()
+                            currentSyncUserId = authState.userId
                         }
                     }
 
@@ -45,6 +51,7 @@ class AppLifecycleManager(
                             syncManager.stopSync()
                             isSyncRunning = false
                         }
+                        currentSyncUserId = null
                     }
                 }
             }
@@ -63,6 +70,7 @@ class AppLifecycleManager(
                 syncManager.stopSync()
                 isSyncRunning = false
             }
+            currentSyncUserId = null
         }
     }
 }

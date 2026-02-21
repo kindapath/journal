@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(project(":common:network"))
+            implementation(project(":common:ui"))
             implementation(project(":features:auth:api"))
         }
     }

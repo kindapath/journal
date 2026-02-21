@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.kindaboii.journal.common.ui.ConstrainedContainer
+import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.withLayoutType
 import org.koin.compose.koinInject
 
 @Composable
@@ -36,89 +41,151 @@ fun AuthScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(authBackgroundBrush()),
+    ) {
+        withLayoutType { layoutType ->
+            when (layoutType) {
+                LayoutType.Expanded -> AuthExpandedScreen(
+                    uiState = uiState,
+                    onModeChange = viewModel::onModeChange,
+                    onEmailChange = viewModel::onEmailChange,
+                    onPasswordChange = viewModel::onPasswordChange,
+                    onSubmit = viewModel::submit,
+                )
+
+                LayoutType.Compact -> AuthCompactScreen(
+                    uiState = uiState,
+                    onModeChange = viewModel::onModeChange,
+                    onEmailChange = viewModel::onEmailChange,
+                    onPasswordChange = viewModel::onPasswordChange,
+                    onSubmit = viewModel::submit,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AuthExpandedScreen(
+    uiState: AuthUiState,
+    onModeChange: (AuthMode) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    ConstrainedContainer(maxWidth = 900.dp) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            AuthCard(
+                uiState = uiState,
+                onModeChange = onModeChange,
+                onEmailChange = onEmailChange,
+                onPasswordChange = onPasswordChange,
+                onSubmit = onSubmit,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .widthIn(max = 560.dp)
+                    .fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun AuthCompactScreen(
+    uiState: AuthUiState,
+    onModeChange: (AuthMode) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Card(
+        AuthCard(
+            uiState = uiState,
+            onModeChange = onModeChange,
+            onEmailChange = onEmailChange,
+            onPasswordChange = onPasswordChange,
+            onSubmit = onSubmit,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .widthIn(max = 440.dp)
+                .fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun AuthCard(
+    uiState: AuthUiState,
+    onModeChange: (AuthMode) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 440.dp)
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            Text(
+                text = "Дневник",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            AuthModeSelector(
+                selectedMode = uiState.mode,
+                onModeChange = onModeChange,
+            )
+
+            OutlinedTextField(
+                value = uiState.email,
+                onValueChange = onEmailChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Email") },
+                enabled = !uiState.isSubmitting,
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = uiState.password,
+                onValueChange = onPasswordChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Пароль") },
+                visualTransformation = PasswordVisualTransformation(),
+                enabled = !uiState.isSubmitting,
+                singleLine = true,
+            )
+
+            if (uiState.errorMessage != null) {
+                Text(
+                    text = uiState.errorMessage.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            Button(
+                onClick = onSubmit,
+                enabled = !uiState.isSubmitting,
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    text = "Journal",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = if (uiState.mode == AuthMode.SignIn) "Войти" else "Зарегистрироваться",
                 )
-
-                AuthModeSelector(
-                    selectedMode = uiState.mode,
-                    onModeChange = viewModel::onModeChange,
-                )
-
-                OutlinedTextField(
-                    value = uiState.email,
-                    onValueChange = viewModel::onEmailChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Email") },
-                    enabled = !uiState.isSubmitting,
-                    singleLine = true,
-                )
-
-                OutlinedTextField(
-                    value = uiState.password,
-                    onValueChange = viewModel::onPasswordChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Password") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    enabled = !uiState.isSubmitting,
-                    singleLine = true,
-                )
-
-                if (uiState.errorMessage != null) {
-                    Text(
-                        text = uiState.errorMessage.orEmpty(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-
-                Button(
-                    onClick = viewModel::submit,
-                    enabled = !uiState.isSubmitting,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = if (uiState.mode == AuthMode.SignIn) "Sign In" else "Sign Up",
-                    )
-                }
-
-                TextButton(
-                    onClick = {
-                        viewModel.onModeChange(
-                            if (uiState.mode == AuthMode.SignIn) AuthMode.SignUp else AuthMode.SignIn,
-                        )
-                    },
-                    enabled = !uiState.isSubmitting,
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(
-                        text = if (uiState.mode == AuthMode.SignIn) {
-                            "Need an account? Sign Up"
-                        } else {
-                            "Already have an account? Sign In"
-                        },
-                    )
-                }
             }
         }
     }
@@ -134,13 +201,13 @@ private fun AuthModeSelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AuthModeButton(
-            text = "Sign In",
+            text = "Войти",
             selected = selectedMode == AuthMode.SignIn,
             onClick = { onModeChange(AuthMode.SignIn) },
             modifier = Modifier.weight(1f),
         )
         AuthModeButton(
-            text = "Sign Up",
+            text = "Зарегистрироваться",
             selected = selectedMode == AuthMode.SignUp,
             onClick = { onModeChange(AuthMode.SignUp) },
             modifier = Modifier.weight(1f),
@@ -159,8 +226,14 @@ private fun AuthModeButton(
         Button(
             onClick = onClick,
             modifier = modifier,
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         ) {
-            Text(text)
+            Text(
+                text = text,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         return
     }

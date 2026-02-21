@@ -6,11 +6,11 @@ import com.powersync.connector.supabase.SupabaseConnector
 import org.koin.dsl.module
 
 internal fun powerSyncModule() = module {
-    single<SupabaseConnector> {
+    factory<SupabaseConnector> {
         // Skip if PowerSync URL not configured
         if (ApiConfig.POWERSYNC_URL.isBlank()) {
             // Return a stub connector that won't be used
-            return@single SupabaseConnector(
+            return@factory SupabaseConnector(
                 supabaseUrl = "",
                 supabaseKey = "",
                 powerSyncEndpoint = "",

@@ -240,6 +240,22 @@ private fun EntriesTopBar(
                 ) {
                     DropdownMenuItem(
                         text = {
+                            Text("Профиль")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Экспорт в PDF")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
                             Text("Выйти из аккаунта")
                         },
                         onClick = {
@@ -247,6 +263,7 @@ private fun EntriesTopBar(
                             onSignOut()
                         },
                     )
+
                 }
             }
         },

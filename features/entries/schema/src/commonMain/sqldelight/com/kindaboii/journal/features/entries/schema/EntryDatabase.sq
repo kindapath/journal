@@ -35,12 +35,17 @@ getEntries:
 SELECT *
 FROM entries
 WHERE deleted_at IS NULL
+  AND user_id IS NOT NULL
+  AND created_at IS NOT NULL
 ORDER BY created_at DESC;
 
 getEntryById:
 SELECT *
 FROM entries
-WHERE id = :id AND deleted_at IS NULL;
+WHERE id = :id
+  AND deleted_at IS NULL
+  AND user_id IS NOT NULL
+  AND created_at IS NOT NULL;
 
 updateEntry:
 UPDATE entries
