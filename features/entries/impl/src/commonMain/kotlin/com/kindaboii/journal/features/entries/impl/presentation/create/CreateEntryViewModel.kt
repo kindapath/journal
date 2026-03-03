@@ -106,6 +106,7 @@ class CreateEntryViewModel(
         val mood = if (_viewState.value.data.hasMoodCheckIn) _viewState.value.data.mood else null
         return Entry(
             id = Uuid.random().toString(),
+            userId = "",
             title = trimmedTitle,
             body = trimmedBody,
             mood = mood,

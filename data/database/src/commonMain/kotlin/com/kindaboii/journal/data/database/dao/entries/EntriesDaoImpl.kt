@@ -23,7 +23,9 @@ class EntriesDaoImpl(
         databaseFlow()
             .flatMapLatest { database ->
                 database.entryDatabaseQueries
-                    .getEntries()
+                    .getEntries(
+                        mapper = ::Entries,
+                    )
                     .asFlow()
                     .mapToList(Dispatchers.Default)
             }
@@ -31,7 +33,10 @@ class EntriesDaoImpl(
     override suspend fun getEntryById(id: String): Entries? =
         db { database ->
             database.entryDatabaseQueries
-                .getEntryById(id)
+                .getEntryById(
+                    id = id,
+                    mapper = ::Entries,
+                )
                 .asFlow()
                 .mapToOneOrNull(Dispatchers.Default)
                 .first()
@@ -48,6 +53,7 @@ class EntriesDaoImpl(
             database.entryDatabaseQueries.updateEntry(
                 title = entity.title,
                 body = entity.body,
+                user_id = entity.user_id,
                 mood_value = entity.mood_value,
                 mood_emotions = entity.mood_emotions,
                 mood_influences = entity.mood_influences,

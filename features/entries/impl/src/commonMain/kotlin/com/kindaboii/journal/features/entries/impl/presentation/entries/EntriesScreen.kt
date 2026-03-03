@@ -91,6 +91,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun EntriesScreen(
+    onSignOut: () -> Unit,
     onAddEntry: () -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
@@ -106,6 +107,7 @@ fun EntriesScreen(
             when (layoutType) {
                 LayoutType.Expanded -> EntriesExpandedScreen(
                     viewState = viewState,
+                    onSignOut = onSignOut,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -113,6 +115,7 @@ fun EntriesScreen(
 
                 LayoutType.Compact -> EntriesCompactScreen(
                     viewState = viewState,
+                    onSignOut = onSignOut,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -125,6 +128,7 @@ fun EntriesScreen(
 @Composable
 private fun EntriesExpandedScreen(
     viewState: EntriesViewState,
+    onSignOut: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -133,6 +137,7 @@ private fun EntriesExpandedScreen(
         EntriesScaffold(
             viewState = viewState,
             layoutType = LayoutType.Expanded,
+            onSignOut = onSignOut,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
@@ -143,6 +148,7 @@ private fun EntriesExpandedScreen(
 @Composable
 private fun EntriesCompactScreen(
     viewState: EntriesViewState,
+    onSignOut: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -150,6 +156,7 @@ private fun EntriesCompactScreen(
     EntriesScaffold(
         viewState = viewState,
         layoutType = LayoutType.Compact,
+        onSignOut = onSignOut,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
         onEditEntry = onEditEntry,
@@ -161,6 +168,7 @@ private fun EntriesCompactScreen(
 private fun EntriesScaffold(
     viewState: EntriesViewState,
     layoutType: LayoutType,
+    onSignOut: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -171,6 +179,7 @@ private fun EntriesScaffold(
         topBar = {
             EntriesTopBar(
                 scrollBehavior = scrollBehavior,
+                onSignOut = onSignOut,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -191,6 +200,7 @@ private fun EntriesScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesTopBar(
+    onSignOut: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -228,6 +238,32 @@ private fun EntriesTopBar(
                     containerColor = menuBackground,
                     modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
                 ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text("Профиль")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Экспорт в PDF")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Выйти из аккаунта")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            onSignOut()
+                        },
+                    )
+
                 }
             }
         },

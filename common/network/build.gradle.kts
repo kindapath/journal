@@ -59,6 +59,7 @@ kotlin {
 
             implementation(libs.koin.core)
             api(libs.supabase.core)
+            api(libs.supabase.auth)
             api(libs.supabase.postgrest)
             api(libs.supabase.realtime)
         }

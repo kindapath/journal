@@ -12,6 +12,8 @@ import kotlinx.serialization.Serializable
 data class EntryDto(
     @SerialName("id")
     val id: String,
+    @SerialName("user_id")
+    val userId: String,
     @SerialName("title")
     val title: String? = null,
     @SerialName("body")
@@ -40,6 +42,7 @@ data class EntryDto(
 
 fun EntryDto.toModel() = Entry(
     id = id,
+    userId = userId,
     title = title,
     body = body,
     mood = moodValue?.let {

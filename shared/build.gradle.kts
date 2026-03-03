@@ -92,6 +92,8 @@ kotlin {
 
             implementation(project(":features:entries:api"))
             implementation(project(":features:entries:impl"))
+            implementation(project(":features:auth:api"))
+            implementation(project(":features:auth:impl"))
 
 
         }

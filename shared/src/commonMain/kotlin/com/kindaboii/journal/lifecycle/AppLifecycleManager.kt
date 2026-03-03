@@ -1,9 +1,13 @@
 package com.kindaboii.journal.lifecycle
 
 import com.kindaboii.journal.data.database.sync.SyncManager
+import com.kindaboii.journal.features.auth.api.AuthRepository
+import com.kindaboii.journal.features.auth.api.AuthState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -11,17 +15,46 @@ import kotlinx.coroutines.launch
  * Responsible for starting/stopping sync and other app-wide services.
  */
 class AppLifecycleManager(
-    private val syncManager: SyncManager
+    private val syncManager: SyncManager,
+    private val authRepository: AuthRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var authObserverJob: Job? = null
+    private var isSyncRunning = false
+    private var currentSyncUserId: String? = null
 
     /**
      * Called when the app starts.
      * Initializes sync and other app-wide services.
      */
     fun onAppStart() {
-        scope.launch {
-            syncManager.startSync()
+        if (authObserverJob != null) return
+        authObserverJob = scope.launch {
+            authRepository.authState.collect { authState ->
+                when (authState) {
+                    is AuthState.Authenticated -> {
+                        if (!isSyncRunning) {
+                            syncManager.startSync()
+                            isSyncRunning = true
+                            currentSyncUserId = authState.userId
+                        } else if (currentSyncUserId != authState.userId) {
+                            syncManager.stopSync()
+                            syncManager.startSync()
+                            currentSyncUserId = authState.userId
+                        }
+                    }
+
+                    AuthState.Loading,
+                    AuthState.Unauthenticated,
+                    -> {
+                        if (isSyncRunning) {
+                            syncManager.stopSync()
+                            isSyncRunning = false
+                        }
+                        currentSyncUserId = null
+                    }
+                }
+            }
         }
     }
 
@@ -30,8 +63,14 @@ class AppLifecycleManager(
      * Cleans up sync and other app-wide services.
      */
     fun onAppStop() {
+        authObserverJob?.cancel()
+        authObserverJob = null
         scope.launch {
-            syncManager.stopSync()
+            if (isSyncRunning) {
+                syncManager.stopSync()
+                isSyncRunning = false
+            }
+            currentSyncUserId = null
         }
     }
 }
