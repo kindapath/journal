@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
@@ -58,15 +58,19 @@ class CommonEntriesDataSourceImpl(
             replay = 1,
         )
 
-    override fun getEntries(): Flow<List<Entry>> = entriesFlow
+    override fun getEntries(userId: String): Flow<List<Entry>> =
+        entriesFlow.map { entries ->
+            entries.filter { it.userId == userId }
+        }
 
-    override suspend fun getEntryById(id: String): Entry? {
+    override suspend fun getEntryById(id: String, userId: String): Entry? {
         if (!isAuthenticated()) return null
         return try {
             supabase.from("entries")
                 .select {
                     filter {
                         eq("id", id)
+                        eq("user_id", userId)
                     }
                 }
                 .decodeSingleOrNull<EntryDto>()
@@ -112,8 +116,18 @@ class CommonEntriesDataSourceImpl(
     private fun authenticatedEntriesFlow(): Flow<List<Entry>> = callbackFlow {
         suspend fun fetchAndEmit() {
             try {
+                val currentUserId = authRepository.currentUserId().orEmpty()
+                if (currentUserId.isBlank()) {
+                    send(emptyList())
+                    return
+                }
+
                 val entries = supabase.from("entries")
-                    .select()
+                    .select {
+                        filter {
+                            eq("user_id", currentUserId)
+                        }
+                    }
                     .decodeList<EntryDto>()
                     .map { it.toModel() }
                     .filter { it.deletedAt == null }

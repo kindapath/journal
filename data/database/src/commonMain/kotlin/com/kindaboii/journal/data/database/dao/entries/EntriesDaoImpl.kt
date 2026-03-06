@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.data.database.dao.entries
+package com.kindaboii.journal.data.database.dao.entries
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
@@ -8,8 +8,8 @@ import com.kindaboii.journal.features.entries.schema.Entries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -19,22 +19,24 @@ class EntriesDaoImpl(
 
     private fun databaseFlow() = flow { emit(db { it }) }
 
-    override fun getEntries(): Flow<List<Entries>> =
+    override fun getEntries(userId: String): Flow<List<Entries>> =
         databaseFlow()
             .flatMapLatest { database ->
                 database.entryDatabaseQueries
                     .getEntries(
+                        user_id = userId,
                         mapper = ::Entries,
                     )
                     .asFlow()
                     .mapToList(Dispatchers.Default)
             }
 
-    override suspend fun getEntryById(id: String): Entries? =
+    override suspend fun getEntryById(id: String, userId: String): Entries? =
         db { database ->
             database.entryDatabaseQueries
                 .getEntryById(
                     id = id,
+                    user_id = userId,
                     mapper = ::Entries,
                 )
                 .asFlow()

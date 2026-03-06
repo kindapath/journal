@@ -20,13 +20,13 @@ interface CommonEntriesDataSource {
      * Returns a reactive stream of all non-deleted entries.
      * Automatically updates when entries change.
      */
-    fun getEntries(): Flow<List<Entry>>
+    fun getEntries(userId: String): Flow<List<Entry>>
 
     /**
      * Returns a single entry lookup by ID.
      * Returns null if entry doesn't exist or is deleted.
      */
-    suspend fun getEntryById(id: String): Entry?
+    suspend fun getEntryById(id: String, userId: String): Entry?
 
     /**
      * Inserts a new entry into storage.

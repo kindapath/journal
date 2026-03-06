@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.map
 class CommonEntriesDataSourceImpl(
     private val entriesDao: EntriesDao
 ) : CommonEntriesDataSource {
-    override fun getEntries(): Flow<List<Entry>> =
+    override fun getEntries(userId: String): Flow<List<Entry>> =
         entriesDao
-            .getEntries()
+            .getEntries(userId)
             .map { items ->
                 items
                     .map {
@@ -25,9 +25,9 @@ class CommonEntriesDataSourceImpl(
                     }
             }
 
-    override suspend fun getEntryById(id: String): Entry? =
+    override suspend fun getEntryById(id: String, userId: String): Entry? =
         entriesDao
-            .getEntryById(id)
+            .getEntryById(id, userId)
             ?.toModel()
 
     override suspend fun insertEntry(entry: Entry) {

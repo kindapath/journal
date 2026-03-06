@@ -5,15 +5,28 @@ import com.kindaboii.journal.features.auth.api.AuthState
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
-import kotlinx.coroutines.flow.MutableStateFlow
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class SupabaseAuthRepository(
     private val supabase: SupabaseClient,
 ) : AuthRepository {
-    private val _authState = MutableStateFlow(currentAuthState())
-    override val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    override val authState: StateFlow<AuthState> =
+        supabase.auth.sessionStatus
+            .map(::toAuthState)
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.Eagerly,
+                initialValue = AuthState.Loading,
+            )
 
     override suspend fun signUp(
         email: String,
@@ -23,10 +36,6 @@ class SupabaseAuthRepository(
             this.email = email
             this.password = password
         }
-    }.map {
-        Unit
-    }.onSuccess {
-        _authState.value = currentAuthState()
     }
 
     override suspend fun signIn(
@@ -37,16 +46,10 @@ class SupabaseAuthRepository(
             this.email = email
             this.password = password
         }
-    }.map {
-        Unit
-    }.onSuccess {
-        _authState.value = currentAuthState()
     }
 
     override suspend fun signOut(): Result<Unit> = runCatching {
         supabase.auth.signOut()
-    }.onSuccess {
-        _authState.value = AuthState.Unauthenticated
     }
 
     override fun currentAccessToken(): String? =
@@ -55,12 +58,20 @@ class SupabaseAuthRepository(
     override fun currentUserId(): String? =
         supabase.auth.currentSessionOrNull()?.user?.id
 
-    private fun currentAuthState(): AuthState {
-        val userId = currentUserId().orEmpty()
-        return if (userId.isBlank()) {
-            AuthState.Unauthenticated
-        } else {
-            AuthState.Authenticated(userId = userId)
+    private fun toAuthState(sessionStatus: SessionStatus): AuthState =
+        when (sessionStatus) {
+            SessionStatus.Initializing -> AuthState.Loading
+            is SessionStatus.Authenticated -> {
+                val userId = sessionStatus.session.user?.id.orEmpty()
+                if (userId.isBlank()) {
+                    AuthState.Unauthenticated
+                } else {
+                    AuthState.Authenticated(userId = userId)
+                }
+            }
+
+            is SessionStatus.NotAuthenticated,
+            is SessionStatus.RefreshFailure,
+            -> AuthState.Unauthenticated
         }
-    }
 }
