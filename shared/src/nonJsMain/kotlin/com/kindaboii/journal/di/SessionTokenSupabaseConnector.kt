@@ -1,6 +1,6 @@
 package com.kindaboii.journal.di
 
-import com.kindaboii.journal.features.auth.api.AuthRepository
+import com.kindaboii.journal.domain.AuthService
 import com.powersync.connector.supabase.SupabaseConnector
 import com.powersync.connectors.PowerSyncCredentials
 
@@ -8,14 +8,14 @@ class SessionTokenSupabaseConnector(
     supabaseUrl: String,
     supabaseKey: String,
     powerSyncEndpoint: String,
-    private val authRepository: AuthRepository,
+    private val authService: AuthService,
 ) : SupabaseConnector(
     supabaseUrl = supabaseUrl,
     supabaseKey = supabaseKey,
     powerSyncEndpoint = powerSyncEndpoint,
 ) {
     override suspend fun fetchCredentials(): PowerSyncCredentials {
-        val token = authRepository.currentAccessToken()
+        val token = authService.currentAccessToken()
             ?: error("PowerSync credential request without an authenticated Supabase session")
 
         return PowerSyncCredentials(

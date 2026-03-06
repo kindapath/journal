@@ -1,8 +1,8 @@
-package com.kindaboii.journal.features.auth.api
+package com.kindaboii.journal.domain
 
 import kotlinx.coroutines.flow.StateFlow
 
-interface AuthRepository {
+interface AuthService {
     val authState: StateFlow<AuthState>
 
     suspend fun signUp(

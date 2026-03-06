@@ -1,13 +1,12 @@
 package com.kindaboii.journal.lifecycle
 
+import com.kindaboii.journal.domain.AuthService
+import com.kindaboii.journal.domain.AuthState
 import com.kindaboii.journal.data.database.sync.SyncManager
-import com.kindaboii.journal.features.auth.api.AuthRepository
-import com.kindaboii.journal.features.auth.api.AuthState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
  */
 class AppLifecycleManager(
     private val syncManager: SyncManager,
-    private val authRepository: AuthRepository,
+    private val authService: AuthService,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var authObserverJob: Job? = null
@@ -30,7 +29,7 @@ class AppLifecycleManager(
     fun onAppStart() {
         if (authObserverJob != null) return
         authObserverJob = scope.launch {
-            authRepository.authState.collect { authState ->
+            authService.authState.collect { authState ->
                 when (authState) {
                     is AuthState.Authenticated -> {
                         if (!isSyncRunning) {

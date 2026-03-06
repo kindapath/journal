@@ -2,7 +2,7 @@ package com.kindaboii.journal.features.auth.impl.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kindaboii.journal.features.auth.api.AuthRepository
+import com.kindaboii.journal.domain.AuthService
 import kotlin.text.Regex
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val authRepository: AuthRepository,
+    private val authService: AuthService,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState())
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(AuthViewState())
+    val uiState: StateFlow<AuthViewState> = _uiState.asStateFlow()
 
     fun onEmailChange(value: String) {
         _uiState.update { state ->
@@ -61,12 +61,12 @@ class AuthViewModel(
             }
 
             val result = when (current.mode) {
-                AuthMode.SignIn -> authRepository.signIn(
+                AuthMode.SignIn -> authService.signIn(
                     email = current.email,
                     password = current.password,
                 )
 
-                AuthMode.SignUp -> authRepository.signUp(
+                AuthMode.SignUp -> authService.signUp(
                     email = current.email,
                     password = current.password,
                 )

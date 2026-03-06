@@ -1,6 +1,6 @@
 package com.kindaboii.journal.features.auth.impl.presentation
 
-data class AuthUiState(
+data class AuthViewState(
     val mode: AuthMode = AuthMode.SignIn,
     val email: String = "",
     val password: String = "",

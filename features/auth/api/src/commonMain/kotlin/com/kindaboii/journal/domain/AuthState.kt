@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.auth.api
+package com.kindaboii.journal.domain
 
 sealed interface AuthState {
     data object Loading : AuthState

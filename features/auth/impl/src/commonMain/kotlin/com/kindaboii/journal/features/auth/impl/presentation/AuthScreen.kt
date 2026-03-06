@@ -66,7 +66,7 @@ fun AuthScreen() {
 
 @Composable
 private fun AuthExpandedScreen(
-    uiState: AuthUiState,
+    uiState: AuthViewState,
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -94,7 +94,7 @@ private fun AuthExpandedScreen(
 
 @Composable
 private fun AuthCompactScreen(
-    uiState: AuthUiState,
+    uiState: AuthViewState,
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -120,7 +120,7 @@ private fun AuthCompactScreen(
 
 @Composable
 private fun AuthCard(
-    uiState: AuthUiState,
+    uiState: AuthViewState,
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,

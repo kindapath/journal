@@ -1,7 +1,7 @@
 package com.kindaboii.journal.features.auth.impl.data
 
-import com.kindaboii.journal.features.auth.api.AuthRepository
-import com.kindaboii.journal.features.auth.api.AuthState
+import com.kindaboii.journal.domain.AuthService
+import com.kindaboii.journal.domain.AuthState
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -14,9 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class SupabaseAuthRepository(
+class SupabaseAuthService(
     private val supabase: SupabaseClient,
-) : AuthRepository {
+) : AuthService {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val authState: StateFlow<AuthState> =

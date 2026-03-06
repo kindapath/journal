@@ -1,7 +1,7 @@
 package com.kindaboii.journal.features.entries.impl.data.repository
 
-import com.kindaboii.journal.features.auth.api.AuthRepository
-import com.kindaboii.journal.features.auth.api.AuthState
+import com.kindaboii.journal.domain.AuthService
+import com.kindaboii.journal.domain.AuthState
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,10 +18,10 @@ import kotlin.time.Instant
 @OptIn(ExperimentalCoroutinesApi::class)
 class EntryRepository(
     private val commonDataSource: CommonEntriesDataSource,
-    private val authRepository: AuthRepository,
+    private val authService: AuthService,
 ) {
     fun getEntries(): Flow<List<Entry>> =
-        authRepository.authState.flatMapLatest { authState ->
+        authService.authState.flatMapLatest { authState ->
             when (authState) {
                 is AuthState.Authenticated -> commonDataSource.getEntries(authState.userId)
                 AuthState.Loading,
@@ -59,6 +59,6 @@ class EntryRepository(
         Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
 
     private fun requireCurrentUserId(): String =
-        authRepository.currentUserId()
+        authService.currentUserId()
             ?: error("Operation requires authenticated user context")
 }

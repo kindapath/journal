@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.navigation
+package com.kindaboii.journal.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -9,10 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import com.kindaboii.journal.features.auth.api.AuthFeatureApi
-import com.kindaboii.journal.features.auth.api.AuthState
+import androidx.compose.ui.Modifier
+import com.kindaboii.journal.domain.AuthService
+import com.kindaboii.journal.domain.AuthState
+import com.kindaboii.journal.AuthFeatureApi
 import com.kindaboii.journal.features.entries.api.EntriesFeatureApi
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -21,7 +22,8 @@ import org.koin.compose.koinInject
 fun AppNavigation() {
     val entriesFeature = koinInject<EntriesFeatureApi>()
     val authFeature = koinInject<AuthFeatureApi>()
-    val authState by authFeature.authState.collectAsState()
+    val authService = koinInject<AuthService>()
+    val authState by authService.authState.collectAsState()
     val scope = rememberCoroutineScope()
 
     Box(
@@ -38,7 +40,7 @@ fun AppNavigation() {
                 entriesFeature.EntriesNavigation(
                     onSignOut = {
                         scope.launch {
-                            authFeature.signOut()
+                            authService.signOut()
                         }
                     },
                 )

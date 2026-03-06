@@ -1,7 +1,7 @@
 package com.kindaboii.journal.features.entries.impl.data
 
-import com.kindaboii.journal.features.auth.api.AuthRepository
-import com.kindaboii.journal.features.auth.api.AuthState
+import com.kindaboii.journal.domain.AuthService
+import com.kindaboii.journal.domain.AuthState
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.data.datasource.common.CommonEntriesDataSource
 import com.kindaboii.journal.features.entries.impl.data.datasource.remote.models.EntryDto
@@ -34,13 +34,13 @@ import kotlinx.coroutines.launch
  */
 class CommonEntriesDataSourceImpl(
     private val supabase: SupabaseClient,
-    private val authRepository: AuthRepository,
+    private val authService: AuthService,
 ) : CommonEntriesDataSource {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val entriesFlow = authRepository.authState
+    private val entriesFlow = authService.authState
         .flatMapLatest { authState ->
             if (authState is AuthState.Authenticated) {
                 authenticatedEntriesFlow()
@@ -116,7 +116,7 @@ class CommonEntriesDataSourceImpl(
     private fun authenticatedEntriesFlow(): Flow<List<Entry>> = callbackFlow {
         suspend fun fetchAndEmit() {
             try {
-                val currentUserId = authRepository.currentUserId().orEmpty()
+                val currentUserId = authService.currentUserId().orEmpty()
                 if (currentUserId.isBlank()) {
                     send(emptyList())
                     return
@@ -178,5 +178,5 @@ class CommonEntriesDataSourceImpl(
     }
 
     private fun isAuthenticated(): Boolean =
-        authRepository.authState.value is AuthState.Authenticated
+        authService.authState.value is AuthState.Authenticated
 }
