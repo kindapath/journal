@@ -10,3 +10,6 @@ data object EntriesRoute : NavKey
 data class CreateEntryRoute(
     val entryId: String? = null,
 ) : NavKey
+
+@Serializable
+data object ProfileRoute : NavKey

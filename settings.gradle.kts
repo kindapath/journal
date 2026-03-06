@@ -1,4 +1,4 @@
-﻿rootProject.name = "Journal"
+rootProject.name = "Journal"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -45,6 +45,8 @@ include(":features:entries:impl")
 include(":features:entries:schema")
 include(":features:auth:api")
 include(":features:auth:impl")
+include(":features:profile:api")
+include(":features:profile:impl")
 
 include(":common:ui")
 include(":common:network")

@@ -1,6 +1,9 @@
-﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
+package com.kindaboii.journal.features.entries.impl.presentation.entries
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,14 +21,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -39,21 +41,21 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
@@ -64,10 +66,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kindaboii.journal.common.colors.JournalColors
-import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
@@ -76,22 +79,19 @@ import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
-
-import kotlin.time.Instant
+import journal.features.entries.impl.generated.resources.journal_logo
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.ui.unit.sp
-import journal.features.entries.impl.generated.resources.journal_logo
+import kotlin.time.Instant
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
-
 
 @Composable
 fun EntriesScreen(
     onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
     onAddEntry: () -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
@@ -108,6 +108,7 @@ fun EntriesScreen(
                 LayoutType.Expanded -> EntriesExpandedScreen(
                     viewState = viewState,
                     onSignOut = onSignOut,
+                    onOpenProfile = onOpenProfile,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -116,6 +117,7 @@ fun EntriesScreen(
                 LayoutType.Compact -> EntriesCompactScreen(
                     viewState = viewState,
                     onSignOut = onSignOut,
+                    onOpenProfile = onOpenProfile,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -129,6 +131,7 @@ fun EntriesScreen(
 private fun EntriesExpandedScreen(
     viewState: EntriesViewState,
     onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -138,6 +141,7 @@ private fun EntriesExpandedScreen(
             viewState = viewState,
             layoutType = LayoutType.Expanded,
             onSignOut = onSignOut,
+            onOpenProfile = onOpenProfile,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
@@ -149,6 +153,7 @@ private fun EntriesExpandedScreen(
 private fun EntriesCompactScreen(
     viewState: EntriesViewState,
     onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -157,6 +162,7 @@ private fun EntriesCompactScreen(
         viewState = viewState,
         layoutType = LayoutType.Compact,
         onSignOut = onSignOut,
+        onOpenProfile = onOpenProfile,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
         onEditEntry = onEditEntry,
@@ -169,6 +175,7 @@ private fun EntriesScaffold(
     viewState: EntriesViewState,
     layoutType: LayoutType,
     onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -180,6 +187,7 @@ private fun EntriesScaffold(
             EntriesTopBar(
                 scrollBehavior = scrollBehavior,
                 onSignOut = onSignOut,
+                onOpenProfile = onOpenProfile,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -201,6 +209,7 @@ private fun EntriesScaffold(
 @Composable
 private fun EntriesTopBar(
     onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -244,6 +253,15 @@ private fun EntriesTopBar(
                         },
                         onClick = {
                             menuExpanded.value = false
+                            onOpenProfile()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Статистика")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
                         },
                     )
                     DropdownMenuItem(
@@ -263,7 +281,6 @@ private fun EntriesTopBar(
                             onSignOut()
                         },
                     )
-
                 }
             }
         },
@@ -291,7 +308,6 @@ private fun EntriesContent(
 ) {
     val listState = remember { LazyListState() }
 
-    // TODO: wtf i dont know, change later
     val listChangeKey = when (viewState) {
         is EntriesViewState.Content -> viewState.entries.firstOrNull()?.id to viewState.entries.size
         else -> null
@@ -301,7 +317,6 @@ private fun EntriesContent(
             listState.scrollToItem(0)
         }
     }
-    //
 
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
@@ -335,7 +350,6 @@ private fun EntriesListCompact(
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -366,7 +380,6 @@ private fun EntriesListCompact(
         }
     }
 }
-
 
 @Composable
 private fun EntryCard(
@@ -466,7 +479,7 @@ private fun EntryCard(
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                     modifier = Modifier
-                        .padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+                        .padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp),
                 )
             }
 
@@ -562,7 +575,6 @@ private fun formatDate(date: Instant): String {
     return "${localDate.day} $month ${localDate.year}"
 }
 
-
 @Composable
 private fun AddEntryFab(
     onAddEntry: () -> Unit,
@@ -586,7 +598,7 @@ private fun AddEntryFab(
 
 @Composable
 private fun MenuItemContent(
-    iconRes: org.jetbrains.compose.resources.DrawableResource,
+    iconRes: DrawableResource,
     text: String,
     color: Color? = null,
 ) {
@@ -629,7 +641,7 @@ private fun EntriesEmptyState(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Это твой дневник",
+            text = "Еще нет записей",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -661,7 +673,6 @@ private fun EntriesLoadingState(
         )
     }
 }
-
 
 @Composable
 private fun appBackgroundBrush(): Brush {

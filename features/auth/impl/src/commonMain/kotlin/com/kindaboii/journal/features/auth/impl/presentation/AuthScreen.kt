@@ -16,8 +16,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,7 +51,10 @@ fun AuthScreen() {
                     onModeChange = viewModel::onModeChange,
                     onEmailChange = viewModel::onEmailChange,
                     onPasswordChange = viewModel::onPasswordChange,
+                    onConfirmationCodeChange = viewModel::onConfirmationCodeChange,
                     onSubmit = viewModel::submit,
+                    onConfirmSignUp = viewModel::confirmSignUp,
+                    onResendSignUpCode = viewModel::resendSignUpCode,
                 )
 
                 LayoutType.Compact -> AuthCompactScreen(
@@ -57,7 +62,10 @@ fun AuthScreen() {
                     onModeChange = viewModel::onModeChange,
                     onEmailChange = viewModel::onEmailChange,
                     onPasswordChange = viewModel::onPasswordChange,
+                    onConfirmationCodeChange = viewModel::onConfirmationCodeChange,
                     onSubmit = viewModel::submit,
+                    onConfirmSignUp = viewModel::confirmSignUp,
+                    onResendSignUpCode = viewModel::resendSignUpCode,
                 )
             }
         }
@@ -70,7 +78,10 @@ private fun AuthExpandedScreen(
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onConfirmSignUp: () -> Unit,
+    onResendSignUpCode: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         Box(
@@ -82,7 +93,10 @@ private fun AuthExpandedScreen(
                 onModeChange = onModeChange,
                 onEmailChange = onEmailChange,
                 onPasswordChange = onPasswordChange,
+                onConfirmationCodeChange = onConfirmationCodeChange,
                 onSubmit = onSubmit,
+                onConfirmSignUp = onConfirmSignUp,
+                onResendSignUpCode = onResendSignUpCode,
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .widthIn(max = 560.dp)
@@ -98,7 +112,10 @@ private fun AuthCompactScreen(
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onConfirmSignUp: () -> Unit,
+    onResendSignUpCode: () -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -109,7 +126,10 @@ private fun AuthCompactScreen(
             onModeChange = onModeChange,
             onEmailChange = onEmailChange,
             onPasswordChange = onPasswordChange,
+            onConfirmationCodeChange = onConfirmationCodeChange,
             onSubmit = onSubmit,
+            onConfirmSignUp = onConfirmSignUp,
+            onResendSignUpCode = onResendSignUpCode,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .widthIn(max = 440.dp)
@@ -124,9 +144,15 @@ private fun AuthCard(
     onModeChange: (AuthMode) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onConfirmSignUp: () -> Unit,
+    onResendSignUpCode: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val awaitingConfirmation = uiState.mode == AuthMode.SignUp && uiState.pendingConfirmationEmail.isNotBlank()
+    val isBusy = uiState.isSubmitting || uiState.isConfirming || uiState.isResendingCode
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
@@ -156,7 +182,7 @@ private fun AuthCard(
                 onValueChange = onEmailChange,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Email") },
-                enabled = !uiState.isSubmitting,
+                enabled = !isBusy && !awaitingConfirmation,
                 singleLine = true,
             )
 
@@ -166,25 +192,71 @@ private fun AuthCard(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Пароль") },
                 visualTransformation = PasswordVisualTransformation(),
-                enabled = !uiState.isSubmitting,
+                enabled = !isBusy && !awaitingConfirmation,
                 singleLine = true,
             )
 
-            if (uiState.errorMessage != null) {
+            if (awaitingConfirmation) {
                 Text(
-                    text = uiState.errorMessage.orEmpty(),
-                    color = MaterialTheme.colorScheme.error,
+                    text = "Мы отправили код подтверждения на ${uiState.pendingConfirmationEmail}.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                OutlinedTextField(
+                    value = uiState.confirmationCode,
+                    onValueChange = onConfirmationCodeChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Код подтверждения") },
+                    enabled = !isBusy,
+                    singleLine = true,
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        onClick = onConfirmSignUp,
+                        enabled = !isBusy,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Подтвердить")
+                    }
+
+                    TextButton(
+                        onClick = onResendSignUpCode,
+                        enabled = !isBusy,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Отправить снова")
+                    }
+                }
+            } else {
+                Button(
+                    onClick = onSubmit,
+                    enabled = !isBusy,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = if (uiState.mode == AuthMode.SignIn) "Войти" else "Зарегистрироваться",
+                    )
+                }
+            }
+
+            uiState.infoMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
 
-            Button(
-                onClick = onSubmit,
-                enabled = !uiState.isSubmitting,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            uiState.errorMessage?.let { message ->
                 Text(
-                    text = if (uiState.mode == AuthMode.SignIn) "Войти" else "Зарегистрироваться",
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }

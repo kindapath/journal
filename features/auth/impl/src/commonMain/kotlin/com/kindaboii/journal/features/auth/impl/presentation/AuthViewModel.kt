@@ -21,6 +21,7 @@ class AuthViewModel(
             state.copy(
                 email = value.trim(),
                 errorMessage = null,
+                infoMessage = null,
             )
         }
     }
@@ -30,6 +31,17 @@ class AuthViewModel(
             state.copy(
                 password = value,
                 errorMessage = null,
+                infoMessage = null,
+            )
+        }
+    }
+
+    fun onConfirmationCodeChange(value: String) {
+        _uiState.update { state ->
+            state.copy(
+                confirmationCode = value.trim(),
+                errorMessage = null,
+                infoMessage = null,
             )
         }
     }
@@ -38,6 +50,10 @@ class AuthViewModel(
         _uiState.update { state ->
             state.copy(
                 mode = mode,
+                password = "",
+                confirmationCode = "",
+                pendingConfirmationEmail = "",
+                infoMessage = null,
                 errorMessage = null,
             )
         }
@@ -47,7 +63,7 @@ class AuthViewModel(
         val current = _uiState.value
         if (current.email.isBlank() || current.password.isBlank()) {
             _uiState.update { state ->
-                state.copy(errorMessage = "Email and password are required")
+                state.copy(errorMessage = "Введите email и пароль.")
             }
             return
         }
@@ -56,6 +72,7 @@ class AuthViewModel(
             _uiState.update { state ->
                 state.copy(
                     isSubmitting = true,
+                    infoMessage = null,
                     errorMessage = null,
                 )
             }
@@ -75,11 +92,25 @@ class AuthViewModel(
             result
                 .onSuccess {
                     _uiState.update { state ->
-                        state.copy(
-                            isSubmitting = false,
-                            password = "",
-                            errorMessage = null,
-                        )
+                        when (current.mode) {
+                            AuthMode.SignIn -> state.copy(
+                                isSubmitting = false,
+                                password = "",
+                                confirmationCode = "",
+                                pendingConfirmationEmail = "",
+                                infoMessage = null,
+                                errorMessage = null,
+                            )
+
+                            AuthMode.SignUp -> state.copy(
+                                isSubmitting = false,
+                                password = "",
+                                pendingConfirmationEmail = current.email,
+                                confirmationCode = "",
+                                infoMessage = "Код подтверждения отправлен на ${current.email}. Введите его ниже, чтобы завершить регистрацию.",
+                                errorMessage = null,
+                            )
+                        }
                     }
                 }
                 .onFailure { throwable ->
@@ -93,13 +124,103 @@ class AuthViewModel(
         }
     }
 
+    fun confirmSignUp() {
+        val current = _uiState.value
+        val email = current.pendingConfirmationEmail.trim()
+        val code = current.confirmationCode.trim()
+
+        when {
+            email.isBlank() -> {
+                _uiState.update { it.copy(errorMessage = "Сначала зарегистрируйтесь, чтобы получить код подтверждения.") }
+                return
+            }
+
+            code.isBlank() -> {
+                _uiState.update { it.copy(errorMessage = "Введите код подтверждения из письма.") }
+                return
+            }
+        }
+
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(
+                    isConfirming = true,
+                    infoMessage = null,
+                    errorMessage = null,
+                )
+            }
+
+            authService.verifySignUp(email = email, code = code)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            mode = AuthMode.SignIn,
+                            email = email,
+                            password = "",
+                            confirmationCode = "",
+                            pendingConfirmationEmail = "",
+                            isConfirming = false,
+                            infoMessage = "Почта подтверждена. Теперь войдите в аккаунт.",
+                            errorMessage = null,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isConfirming = false,
+                            errorMessage = mapConfirmationError(throwable.message),
+                        )
+                    }
+                }
+        }
+    }
+
+    fun resendSignUpCode() {
+        val email = _uiState.value.pendingConfirmationEmail.trim()
+
+        if (email.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Нет email для повторной отправки кода.") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(
+                    isResendingCode = true,
+                    infoMessage = null,
+                    errorMessage = null,
+                )
+            }
+
+            authService.resendSignUpConfirmation(email)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            isResendingCode = false,
+                            infoMessage = "Новый код отправлен на $email.",
+                            errorMessage = null,
+                        )
+                    }
+                }
+                .onFailure { throwable ->
+                    _uiState.update { state ->
+                        state.copy(
+                            isResendingCode = false,
+                            errorMessage = mapAuthError(throwable.message),
+                        )
+                    }
+                }
+        }
+    }
+
     private fun mapAuthError(rawMessage: String?): String {
         val message = rawMessage.orEmpty()
 
         if (message.contains("email_not_confirmed", ignoreCase = true) ||
             message.contains("email not confirmed", ignoreCase = true)
         ) {
-            return "Check your inbox and confirm your email before signing in."
+            return "Подтвердите email перед входом."
         }
 
         if (message.contains("over_email_send_rate_limit", ignoreCase = true) ||
@@ -111,20 +232,36 @@ class AuthViewModel(
                 ?.getOrNull(1)
 
             return if (waitSeconds != null) {
-                "Too many requests. Please wait $waitSeconds seconds and try again."
+                "Слишком много запросов. Подождите $waitSeconds сек. и попробуйте снова."
             } else {
-                "Too many requests. Please wait a moment and try again."
+                "Слишком много запросов. Подождите немного и попробуйте снова."
             }
         }
 
         if (message.contains("invalid login credentials", ignoreCase = true)) {
-            return "Invalid email or password."
+            return "Неверный email или пароль."
         }
 
         if (message.contains("user already registered", ignoreCase = true)) {
-            return "This email is already registered. Try signing in."
+            return "Этот email уже зарегистрирован. Попробуйте войти."
         }
 
-        return "Authentication failed. Please try again."
+        if (message.contains("invalid", ignoreCase = true) && message.contains("email", ignoreCase = true)) {
+            return "Некорректный email."
+        }
+
+        return "Не удалось выполнить авторизацию. Попробуйте еще раз."
+    }
+
+    private fun mapConfirmationError(rawMessage: String?): String {
+        val message = rawMessage.orEmpty()
+
+        if (message.contains("token", ignoreCase = true) ||
+            message.contains("otp", ignoreCase = true)
+        ) {
+            return "Неверный или просроченный код подтверждения."
+        }
+
+        return "Не удалось подтвердить email. Попробуйте еще раз."
     }
 }

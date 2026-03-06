@@ -1,4 +1,4 @@
-﻿package com.kindaboii.journal.features.entries.impl.navigation
+package com.kindaboii.journal.features.entries.impl.navigation
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,15 +14,17 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.kindaboii.journal.features.entries.impl.presentation.create.CreateEntryScreen
 import com.kindaboii.journal.features.entries.impl.presentation.entries.EntriesScreen
+import com.kindaboii.journal.features.profile.api.ProfileFeatureApi
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-
+import org.koin.compose.koinInject
 
 private val navConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(EntriesRoute::class, EntriesRoute.serializer())
             subclass(CreateEntryRoute::class, CreateEntryRoute.serializer())
+            subclass(ProfileRoute::class, ProfileRoute.serializer())
         }
     }
 }
@@ -31,6 +33,7 @@ private val navConfig = SavedStateConfiguration {
 fun EntriesNavigation(
     onSignOut: () -> Unit,
 ) {
+    val profileFeature = koinInject<ProfileFeatureApi>()
     val backStack = rememberNavBackStack(navConfig, EntriesRoute)
 
     NavDisplay(
@@ -69,6 +72,11 @@ fun EntriesNavigation(
             entry<EntriesRoute> {
                 EntriesScreen(
                     onSignOut = onSignOut,
+                    onOpenProfile = {
+                        if (backStack.lastOrNull() != ProfileRoute) {
+                            backStack.add(ProfileRoute)
+                        }
+                    },
                     onAddEntry = {
                         if (backStack.lastOrNull() != CreateEntryRoute()) {
                             backStack.add(CreateEntryRoute())
@@ -89,7 +97,11 @@ fun EntriesNavigation(
                     onDone = { if (backStack.size > 1) backStack.removeLast() },
                 )
             }
+            entry<ProfileRoute> {
+                profileFeature.ProfileScreen(
+                    onBack = { if (backStack.size > 1) backStack.removeLast() },
+                )
+            }
         },
     )
-
 }
