@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.ConstrainedContainer
+import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.withLayoutType
 import kotlin.time.Clock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -55,7 +58,6 @@ import journal.features.stats.impl.generated.resources.icon_arrow_back_24
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     onBack: () -> Unit,
@@ -63,6 +65,28 @@ fun StatsScreen(
     val viewModel: StatsViewModel = koinInject()
     val viewState by viewModel.viewState.collectAsState()
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(statsBackgroundBrush()),
+    ) {
+        withLayoutType { layoutType ->
+            when (layoutType) {
+                LayoutType.Expanded -> ConstrainedContainer(maxWidth = 900.dp) {
+                    StatsScaffold(viewState = viewState, onBack = onBack)
+                }
+                LayoutType.Compact -> StatsScaffold(viewState = viewState, onBack = onBack)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StatsScaffold(
+    viewState: StatsViewState,
+    onBack: () -> Unit,
+) {
     Scaffold(
         topBar = {
             LargeTopAppBar(
@@ -83,50 +107,43 @@ fun StatsScreen(
                 expandedHeight = 96.dp,
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(statsBackgroundBrush())
-                .padding(paddingValues),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            when (viewState) {
-                StatsViewState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when (viewState) {
+            StatsViewState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
                 }
-
-                is StatsViewState.Content -> {
-                    StatsContent(viewState = viewState as StatsViewState.Content)
-                }
+            }
+            is StatsViewState.Content -> {
+                StatsContent(
+                    viewState = viewState as StatsViewState.Content,
+                    paddingValues = paddingValues,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun StatsContent(viewState: StatsViewState.Content) {
-    ConstrainedContainer(maxWidth = 900.dp) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            SummaryCards(
-                totalEntries = viewState.totalEntries,
-                totalWords = viewState.totalWords,
-                currentStreak = viewState.currentStreak,
-            )
-            MoodChartCard(moodPoints = viewState.moodPoints)
-        }
+private fun StatsContent(viewState: StatsViewState.Content, paddingValues: PaddingValues) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(paddingValues)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        SummaryCards(
+            totalEntries = viewState.totalEntries,
+            totalWords = viewState.totalWords,
+            currentStreak = viewState.currentStreak,
+        )
+        MoodChartCard(moodPoints = viewState.moodPoints)
     }
 }
 
