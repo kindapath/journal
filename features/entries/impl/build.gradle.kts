@@ -93,6 +93,11 @@ kotlin {
         nonJsMain.dependencies {
             implementation(libs.powersync.connector.supabase)
         }
+
+        jvmMain.dependencies {
+            implementation(libs.openhtmltopdf.pdfbox)
+            implementation(libs.jsoup)
+        }
     }
 }
 

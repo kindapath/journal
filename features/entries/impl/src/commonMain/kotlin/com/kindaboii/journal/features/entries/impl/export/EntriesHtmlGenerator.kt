@@ -133,6 +133,34 @@ private fun tagsHtml(tags: List<String>, cssClass: String, label: String): Strin
 </div>"""
 }
 
+// Gradient stops: [pct, r, g, b] — mirrors the UI mood bar colours.
+private val MOOD_STOPS = arrayOf(
+    intArrayOf(0, 0x6B, 0x5B, 0xCF), intArrayOf(16, 0x6F, 0xA9, 0xFF),
+    intArrayOf(33, 0x9D, 0xD6, 0xFF), intArrayOf(50, 0xCF, 0xEA, 0xF7),
+    intArrayOf(66, 0x9E, 0xDB, 0x8B), intArrayOf(83, 0xF0, 0xC5, 0x6B),
+    intArrayOf(100, 0xF5, 0xA3, 0x54),
+)
+
+internal fun moodColor(pct: Int): String {
+    val lo = MOOD_STOPS.last { it[0] <= pct }
+    val hi = MOOD_STOPS.first { it[0] >= pct }
+    return if (lo === hi) {
+        hex3(lo[1], lo[2], lo[3])
+    } else {
+        val t = (pct - lo[0]).toFloat() / (hi[0] - lo[0])
+        hex3(
+            (lo[1] + t * (hi[1] - lo[1])).toInt(),
+            (lo[2] + t * (hi[2] - lo[2])).toInt(),
+            (lo[3] + t * (hi[3] - lo[3])).toInt(),
+        )
+    }
+}
+
+private fun hex3(r: Int, g: Int, b: Int): String {
+    fun Int.hex2() = toString(16).padStart(2, '0')
+    return "#${r.hex2()}${g.hex2()}${b.hex2()}"
+}
+
 private fun moodMomentLabel(value: Long): String = when {
     value <= 14 -> "Очень неприятный момент"
     value <= 28 -> "Неприятный момент"

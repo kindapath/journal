@@ -20,6 +20,7 @@ class PrintActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val htmlPath = intent.getStringExtra(EXTRA_HTML_PATH) ?: return finish()
+        val docName = intent.getStringExtra(EXTRA_FILE_NAME) ?: "Дневник"
 
         val wv = WebView(this).also {
             webView = it
@@ -29,9 +30,9 @@ class PrintActivity : ComponentActivity() {
         wv.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 val printManager = getSystemService(PRINT_SERVICE) as PrintManager
-                val adapter = view.createPrintDocumentAdapter("Дневник")
+                val adapter = view.createPrintDocumentAdapter(docName)
                 val printJob = printManager.print(
-                    "Дневник",
+                    docName,
                     adapter,
                     PrintAttributes.Builder()
                         .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
@@ -66,5 +67,6 @@ class PrintActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_HTML_PATH = "html_path"
+        const val EXTRA_FILE_NAME = "file_name"
     }
 }

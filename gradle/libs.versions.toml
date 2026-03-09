@@ -25,6 +25,8 @@ material3 = "1.10.0-alpha05"
 sqldelight = "2.2.1"
 supabase = "3.3.0"
 powersync = "1.10.2"
+openhtmltopdf = "1.1.37"
+jsoup = "1.18.3"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "coroutinesExtensions" }
@@ -80,6 +82,8 @@ supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt", ver
 powersync-core = { module = "com.powersync:core", version.ref = "powersync" }
 powersync-connector-supabase = { module = "com.powersync:connector-supabase", version.ref = "powersync" }
 powersync-integration-sqldelight = { module = "com.powersync:integration-sqldelight", version.ref = "powersync" }
+openhtmltopdf-pdfbox = { module = "io.github.openhtmltopdf:openhtmltopdf-pdfbox", version.ref = "openhtmltopdf" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "coroutinesExtensions" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "coroutinesExtensions" }
 web-worker-driver-wasm-js = { module = "app.cash.sqldelight:web-worker-driver-wasm-js", version.ref = "sqldelight" }

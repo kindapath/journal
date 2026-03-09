@@ -8,6 +8,9 @@ import com.kindaboii.journal.features.entries.impl.export.generateAllEntriesHtml
 import com.kindaboii.journal.features.entries.impl.export.generateEntryHtml
 import com.kindaboii.journal.features.entries.impl.export.printHtml
 import kotlinx.coroutines.Dispatchers
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +43,7 @@ class EntriesViewModel(
     fun onExportEntry(entry: Entry) {
         viewModelScope.launch(Dispatchers.Default) {
             val html = generateEntryHtml(entry)
-            printHtml(html)
+            printHtml(html, "Запись в дневнике. ${exportTimestamp()}")
         }
     }
 
@@ -48,8 +51,15 @@ class EntriesViewModel(
         val entries = (_viewState.value as? EntriesViewState.Content)?.entries ?: return
         viewModelScope.launch(Dispatchers.Default) {
             val html = generateAllEntriesHtml(entries)
-            printHtml(html)
+            printHtml(html, "Дневник. ${exportTimestamp()}")
         }
+    }
+
+    private fun exportTimestamp(): String {
+        val dt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val d = "${dt.dayOfMonth.toString().padStart(2, '0')}.${dt.monthNumber.toString().padStart(2, '0')}.${dt.year}"
+        val t = "${dt.hour.toString().padStart(2, '0')}-${dt.minute.toString().padStart(2, '0')}-${dt.second.toString().padStart(2, '0')}"
+        return "$d $t"
     }
 }
 
