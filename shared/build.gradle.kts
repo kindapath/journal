@@ -90,6 +90,8 @@ kotlin {
             implementation(project(":features:auth:impl"))
             implementation(project(":features:profile:api"))
             implementation(project(":features:profile:impl"))
+            implementation(project(":features:stats:api"))
+            implementation(project(":features:stats:impl"))
         }
 
         nonJsMain.dependencies {
