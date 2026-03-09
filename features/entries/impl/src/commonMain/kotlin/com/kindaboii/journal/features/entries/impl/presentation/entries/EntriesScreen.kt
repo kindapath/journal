@@ -78,6 +78,7 @@ import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
+import journal.features.entries.impl.generated.resources.icon_export_24
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
 import journal.features.entries.impl.generated.resources.journal_logo
 import kotlinx.datetime.Month
@@ -114,6 +115,8 @@ fun EntriesScreen(
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
+                    onExportEntry = viewModel::onExportEntry,
+                    onExportAll = viewModel::onExportAll,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
@@ -124,6 +127,8 @@ fun EntriesScreen(
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
+                    onExportEntry = viewModel::onExportEntry,
+                    onExportAll = viewModel::onExportAll,
                 )
             }
         }
@@ -139,6 +144,8 @@ private fun EntriesExpandedScreen(
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
@@ -150,6 +157,8 @@ private fun EntriesExpandedScreen(
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
+            onExportEntry = onExportEntry,
+            onExportAll = onExportAll,
         )
     }
 }
@@ -163,6 +172,8 @@ private fun EntriesCompactScreen(
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     EntriesScaffold(
         viewState = viewState,
@@ -173,6 +184,8 @@ private fun EntriesCompactScreen(
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
         onEditEntry = onEditEntry,
+        onExportEntry = onExportEntry,
+        onExportAll = onExportAll,
     )
 }
 
@@ -187,6 +200,8 @@ private fun EntriesScaffold(
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
@@ -197,6 +212,7 @@ private fun EntriesScaffold(
                 onSignOut = onSignOut,
                 onOpenProfile = onOpenProfile,
                 onOpenStats = onOpenStats,
+                onExportAll = onExportAll,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -210,6 +226,7 @@ private fun EntriesScaffold(
             scrollBehavior = scrollBehavior,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
+            onExportEntry = onExportEntry,
         )
     }
 }
@@ -220,6 +237,7 @@ private fun EntriesTopBar(
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenStats: () -> Unit,
+    onExportAll: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -281,6 +299,7 @@ private fun EntriesTopBar(
                         },
                         onClick = {
                             menuExpanded.value = false
+                            onExportAll()
                         },
                     )
                     DropdownMenuItem(
@@ -316,6 +335,7 @@ private fun EntriesContent(
     scrollBehavior: TopAppBarScrollBehavior,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
 ) {
     val listState = remember { LazyListState() }
 
@@ -344,6 +364,7 @@ private fun EntriesContent(
                 scrollBehavior = scrollBehavior,
                 onDeleteEntry = onDeleteEntry,
                 onEditEntry = onEditEntry,
+                onExportEntry = onExportEntry,
                 listState = listState,
             )
         }
@@ -360,6 +381,7 @@ private fun EntriesListCompact(
     listState: LazyListState,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -382,6 +404,7 @@ private fun EntriesListCompact(
                     entry = entry,
                     onDeleteEntry = { onDeleteEntry(entry.id) },
                     onEditEntry = { onEditEntry(entry.id) },
+                    onExportEntry = { onExportEntry(entry) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -396,6 +419,7 @@ private fun EntryCard(
     entry: Entry,
     onDeleteEntry: () -> Unit,
     onEditEntry: () -> Unit,
+    onExportEntry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -544,6 +568,18 @@ private fun EntryCard(
                             onClick = {
                                 menuExpanded.value = false
                                 onEditEntry()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_export_24,
+                                    text = "Экспорт в PDF",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onExportEntry()
                             },
                         )
                         DropdownMenuItem(

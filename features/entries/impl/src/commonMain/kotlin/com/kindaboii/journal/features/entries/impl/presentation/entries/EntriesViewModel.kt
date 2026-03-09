@@ -2,7 +2,12 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
+import com.kindaboii.journal.features.entries.impl.export.generateAllEntriesHtml
+import com.kindaboii.journal.features.entries.impl.export.generateEntryHtml
+import com.kindaboii.journal.features.entries.impl.export.printHtml
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +34,21 @@ class EntriesViewModel(
     fun onDeleteEntry(entryId: String) {
         viewModelScope.launch {
             repository.deleteEntryById(entryId)
+        }
+    }
+
+    fun onExportEntry(entry: Entry) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val html = generateEntryHtml(entry)
+            printHtml(html)
+        }
+    }
+
+    fun onExportAll() {
+        val entries = (_viewState.value as? EntriesViewState.Content)?.entries ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val html = generateAllEntriesHtml(entries)
+            printHtml(html)
         }
     }
 }
