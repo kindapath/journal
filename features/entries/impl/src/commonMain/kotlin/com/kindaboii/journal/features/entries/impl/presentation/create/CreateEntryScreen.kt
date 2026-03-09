@@ -44,8 +44,11 @@ import com.kindaboii.journal.features.entries.api.models.Mood
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
 import com.kindaboii.journal.features.entries.impl.presentation.create.moodcheckin.CollapsedMoodBar
 import com.kindaboii.journal.features.entries.impl.presentation.create.moodcheckin.MoodCheckInSheet
+import androidx.compose.ui.draw.clip
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.close_24px
+import journal.features.entries.impl.generated.resources.icon_arrow_back_24
+import journal.features.entries.impl.generated.resources.icon_check_24
 import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Clock
 import org.koin.compose.koinInject
@@ -179,40 +182,42 @@ private fun CreateEntryTopBar(
         modifier = Modifier.padding(top = 24.dp),
         windowInsets = TopAppBarDefaults.windowInsets,
         navigationIcon = {
-            Text(
-                text = "Назад",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+            Box(
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                        shape = MaterialTheme.shapes.small,
-                    )
+                    .padding(start = 8.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
                     .clickable { onBack() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
                     .pointerHoverIcon(PointerIcon.Hand),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.icon_arrow_back_24),
+                    contentDescription = "Назад",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         },
         actions = {
-            Text(
-                text = "Ещё",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+            Box(
                 modifier = Modifier
-                    .padding(end = 16.dp)
-                    .pointerHoverIcon(PointerIcon.Hand),
-            )
-            Text(
-                text = "Готово",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .padding(end = 16.dp)
+                    .padding(end = 8.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .clickable { onDone() }
                     .pointerHoverIcon(PointerIcon.Hand),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.icon_check_24),
+                    contentDescription = "Готово",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,

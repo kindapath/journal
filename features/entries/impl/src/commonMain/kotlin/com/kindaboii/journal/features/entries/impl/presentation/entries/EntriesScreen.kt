@@ -45,6 +45,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -258,16 +261,28 @@ private fun EntriesTopBar(
                 modifier = Modifier.padding(end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.icon_more_horiz_24),
-                    contentDescription = "Ещё",
-                    tint = MaterialTheme.colorScheme.onSurface,
+                val moreHoverSource = remember { MutableInteractionSource() }
+                val moreHovered by moreHoverSource.collectIsHoveredAsState()
+                Box(
                     modifier = Modifier
-                        .padding(start = 12.dp)
-                        .size(32.dp)
-                        .clickable { menuExpanded.value = true }
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = if (moreHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .hoverable(moreHoverSource)
+                        .clickable(interactionSource = moreHoverSource, indication = null) { menuExpanded.value = true }
                         .pointerHoverIcon(PointerIcon.Hand),
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_more_horiz_24),
+                        contentDescription = "Ещё",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
                 DropdownMenu(
                     expanded = menuExpanded.value,
                     onDismissRequest = { menuExpanded.value = false },
@@ -539,7 +554,9 @@ private fun EntryCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(24.dp)
+                            .clip(CircleShape)
                             .clickable { menuExpanded.value = true }
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .onGloballyPositioned { coordinates ->
                                 val position = coordinates.positionInWindow()
                                 anchorLeftPx.intValue = position.x.toInt()

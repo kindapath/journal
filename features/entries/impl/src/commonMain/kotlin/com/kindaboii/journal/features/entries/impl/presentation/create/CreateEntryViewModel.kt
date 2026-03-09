@@ -79,7 +79,12 @@ class CreateEntryViewModel(
     }
 
     fun onDone(onSuccess: () -> Unit) {
-        if (_viewState.value.data.isSaving) return
+        val state = _viewState.value.data
+        if (state.title.isBlank() && state.body.isBlank() && !state.hasMoodCheckIn) {
+            onSuccess()
+            return
+        }
+        if (state.isSaving) return
         viewModelScope.launch {
             _viewState.update { it.data.copy(isSaving = true) }
 
