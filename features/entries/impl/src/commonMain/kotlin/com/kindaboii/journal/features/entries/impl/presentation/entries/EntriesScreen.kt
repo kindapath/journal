@@ -92,6 +92,7 @@ import org.koin.compose.koinInject
 fun EntriesScreen(
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
@@ -109,6 +110,7 @@ fun EntriesScreen(
                     viewState = viewState,
                     onSignOut = onSignOut,
                     onOpenProfile = onOpenProfile,
+                    onOpenStats = onOpenStats,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -118,6 +120,7 @@ fun EntriesScreen(
                     viewState = viewState,
                     onSignOut = onSignOut,
                     onOpenProfile = onOpenProfile,
+                    onOpenStats = onOpenStats,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
@@ -132,6 +135,7 @@ private fun EntriesExpandedScreen(
     viewState: EntriesViewState,
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -142,6 +146,7 @@ private fun EntriesExpandedScreen(
             layoutType = LayoutType.Expanded,
             onSignOut = onSignOut,
             onOpenProfile = onOpenProfile,
+            onOpenStats = onOpenStats,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
@@ -154,6 +159,7 @@ private fun EntriesCompactScreen(
     viewState: EntriesViewState,
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -163,6 +169,7 @@ private fun EntriesCompactScreen(
         layoutType = LayoutType.Compact,
         onSignOut = onSignOut,
         onOpenProfile = onOpenProfile,
+        onOpenStats = onOpenStats,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
         onEditEntry = onEditEntry,
@@ -176,6 +183,7 @@ private fun EntriesScaffold(
     layoutType: LayoutType,
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
@@ -188,6 +196,7 @@ private fun EntriesScaffold(
                 scrollBehavior = scrollBehavior,
                 onSignOut = onSignOut,
                 onOpenProfile = onOpenProfile,
+                onOpenStats = onOpenStats,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -210,6 +219,7 @@ private fun EntriesScaffold(
 private fun EntriesTopBar(
     onSignOut: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -262,6 +272,7 @@ private fun EntriesTopBar(
                         },
                         onClick = {
                             menuExpanded.value = false
+                            onOpenStats()
                         },
                     )
                     DropdownMenuItem(

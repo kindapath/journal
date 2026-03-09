@@ -15,6 +15,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import com.kindaboii.journal.features.entries.impl.presentation.create.CreateEntryScreen
 import com.kindaboii.journal.features.entries.impl.presentation.entries.EntriesScreen
 import com.kindaboii.journal.features.profile.api.ProfileFeatureApi
+import com.kindaboii.journal.features.stats.api.StatsFeatureApi
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.koinInject
@@ -25,6 +26,7 @@ private val navConfig = SavedStateConfiguration {
             subclass(EntriesRoute::class, EntriesRoute.serializer())
             subclass(CreateEntryRoute::class, CreateEntryRoute.serializer())
             subclass(ProfileRoute::class, ProfileRoute.serializer())
+            subclass(StatsRoute::class, StatsRoute.serializer())
         }
     }
 }
@@ -34,6 +36,7 @@ fun EntriesNavigation(
     onSignOut: () -> Unit,
 ) {
     val profileFeature = koinInject<ProfileFeatureApi>()
+    val statsFeature = koinInject<StatsFeatureApi>()
     val backStack = rememberNavBackStack(navConfig, EntriesRoute)
 
     NavDisplay(
@@ -77,6 +80,11 @@ fun EntriesNavigation(
                             backStack.add(ProfileRoute)
                         }
                     },
+                    onOpenStats = {
+                        if (backStack.lastOrNull() != StatsRoute) {
+                            backStack.add(StatsRoute)
+                        }
+                    },
                     onAddEntry = {
                         if (backStack.lastOrNull() != CreateEntryRoute()) {
                             backStack.add(CreateEntryRoute())
@@ -99,6 +107,11 @@ fun EntriesNavigation(
             }
             entry<ProfileRoute> {
                 profileFeature.ProfileScreen(
+                    onBack = { if (backStack.size > 1) backStack.removeLast() },
+                )
+            }
+            entry<StatsRoute> {
+                statsFeature.StatsScreen(
                     onBack = { if (backStack.size > 1) backStack.removeLast() },
                 )
             }

@@ -13,3 +13,6 @@ data class CreateEntryRoute(
 
 @Serializable
 data object ProfileRoute : NavKey
+
+@Serializable
+data object StatsRoute : NavKey
