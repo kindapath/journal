@@ -20,11 +20,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,13 +44,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.ConstrainedContainer
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
-import kotlinx.datetime.toEpochDays
 import kotlinx.datetime.toLocalDateTime
+import journal.features.stats.impl.generated.resources.Res
+import journal.features.stats.impl.generated.resources.icon_arrow_back_24
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,13 +65,22 @@ fun StatsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text("Статистика") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("Назад")
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_arrow_back_24),
+                            contentDescription = "Назад",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent,
+                ),
+                expandedHeight = 96.dp,
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -344,7 +357,7 @@ private fun MoodLineChart(
     }
 }
 
-private fun daysBetween(start: LocalDate, end: LocalDate): Int =
+private fun daysBetween(start: LocalDate, end: LocalDate): Long =
     end.toEpochDays() - start.toEpochDays()
 
 private fun moodColor(value: Long): Color = when {

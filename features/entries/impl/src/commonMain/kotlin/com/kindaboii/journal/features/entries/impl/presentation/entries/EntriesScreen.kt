@@ -230,8 +230,8 @@ private fun EntriesTopBar(
         title = {
             Text(
                 text = "Дневник",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
@@ -301,7 +301,7 @@ private fun EntriesTopBar(
             titleContentColor = MaterialTheme.colorScheme.onBackground,
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        modifier = Modifier.padding(top = 24.dp, bottom = 0.dp),
+        modifier = Modifier.padding(top = 32.dp),
         windowInsets = TopAppBarDefaults.windowInsets,
         scrollBehavior = scrollBehavior,
     )
@@ -372,9 +372,8 @@ private fun EntriesListCompact(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = maxWidth)
-                .padding(top = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
+                .widthIn(max = maxWidth),
+            contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -443,7 +442,7 @@ private fun EntryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(top = if (entry.mood == null) 12.dp else 0.dp, bottom = 8.dp),
         ) {
             entry.mood?.let { mood ->
                 MoodHeaderBar(
