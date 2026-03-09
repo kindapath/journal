@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "./gradlew",
+      "runtimeArgs": [":webApp:jsBrowserDevelopmentRun"],
+      "port": 8080
+    },
+    {
+      "name": "desktop",
+      "runtimeExecutable": "./gradlew",
+      "runtimeArgs": [":desktopApp:run"],
+      "port": 8887
+    },
+    {
+      "name": "ktor-server",
+      "runtimeExecutable": "./gradlew",
+      "runtimeArgs": [":server:run"],
+      "port": 8080
+    }
+  ]
+}
