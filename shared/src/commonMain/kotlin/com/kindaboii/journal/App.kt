@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.kindaboii.journal.navigation.AppNavigation
-import com.kindaboii.journal.ui.theme.JournalTheme
+import com.kindaboii.journal.theme.JournalTheme
 
 @Composable
 @Preview

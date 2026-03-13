@@ -17,6 +17,8 @@ sqldelight {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     androidLibrary {
         namespace = "com.kindaboii.journal.data.database"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -43,24 +45,13 @@ kotlin {
         binaries.executable()
     }
 
-
     sourceSets {
         val commonMain by getting
         val jsMain by getting
         val androidMain by getting
         val jvmMain by getting
 
-        val iosMain by creating {
-            dependsOn(commonMain)
-        }
-
-        val iosArm64Main by getting {
-            dependsOn(iosMain)
-        }
-
-        val iosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
+        val iosMain by getting
 
         val nonJsMain by creating {
             dependsOn(commonMain)
@@ -81,6 +72,7 @@ kotlin {
         nonJsMain.dependencies {
             implementation(libs.powersync.core)
             implementation(libs.powersync.integration.sqldelight)
+            implementation(libs.powersync.connector.supabase)
         }
 
         androidMain.dependencies {

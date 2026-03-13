@@ -2,38 +2,33 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.data.repository.EntryRepository
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.SyncManager
-import com.kindaboii.journal.features.entries.impl.domain.usecase.GetEntriesUseCase
+import com.kindaboii.journal.features.entries.impl.export.generateAllEntriesHtml
+import com.kindaboii.journal.features.entries.impl.export.generateEntryHtml
+import com.kindaboii.journal.features.entries.impl.export.printHtml
+import kotlinx.coroutines.Dispatchers
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
-    private val getEntriesUseCase: GetEntriesUseCase,
     private val repository: EntryRepository,
-    private val syncManager: SyncManager,
 ): ViewModel() {
-    private val _uiState = MutableStateFlow<EntriesUiState>(EntriesUiState.Loading)
-    val uiState: StateFlow<EntriesUiState> = _uiState.asStateFlow()
+    private val _viewState = MutableStateFlow<EntriesViewState>(EntriesViewState.Loading)
+    val viewState: StateFlow<EntriesViewState> = _viewState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            syncManager.startSync()
-        }
-        loadEntries()
-    }
-
-    private fun loadEntries() {
-        viewModelScope.launch {
-            _uiState.value = EntriesUiState.Loading
-            getEntriesUseCase()
-            .collectLatest { entries ->
-                _uiState.value = when {
-                    entries.isEmpty() -> EntriesUiState.Empty
-                    else -> EntriesUiState.Content(entries)
+            repository.getEntries().collect { entries ->
+                _viewState.value = if (entries.isEmpty()) {
+                    EntriesViewState.Empty
+                } else {
+                    EntriesViewState.Content(entries)
                 }
             }
         }
@@ -43,6 +38,28 @@ class EntriesViewModel(
         viewModelScope.launch {
             repository.deleteEntryById(entryId)
         }
+    }
+
+    fun onExportEntry(entry: Entry) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val html = generateEntryHtml(entry)
+            printHtml(html, "Запись в дневнике. ${exportTimestamp()}")
+        }
+    }
+
+    fun onExportAll() {
+        val entries = (_viewState.value as? EntriesViewState.Content)?.entries ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val html = generateAllEntriesHtml(entries)
+            printHtml(html, "Дневник. ${exportTimestamp()}")
+        }
+    }
+
+    private fun exportTimestamp(): String {
+        val dt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val d = "${dt.dayOfMonth.toString().padStart(2, '0')}.${dt.monthNumber.toString().padStart(2, '0')}.${dt.year}"
+        val t = "${dt.hour.toString().padStart(2, '0')}-${dt.minute.toString().padStart(2, '0')}-${dt.second.toString().padStart(2, '0')}"
+        return "$d $t"
     }
 }
 

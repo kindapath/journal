@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,8 +10,6 @@ plugins {
 }
 
 kotlin {
-    // Включаем стандартную иерархию. Она создаст iosMain автоматически,
-    // так как у нас есть несколько iOS таргетов.
     applyDefaultHierarchyTemplate()
 
     androidLibrary {
@@ -32,7 +30,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    // Настраиваем фреймворк для всех iOS таргетов сразу
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
         if (name.startsWith("ios")) {
             binaries.framework {
@@ -49,20 +46,17 @@ kotlin {
         binaries.executable()
     }
 
-
     sourceSets {
         val commonMain by getting
         val androidMain by getting
-        val iosMain by getting // Теперь iosMain будет найден благодаря applyDefaultHierarchyTemplate
+        val iosMain by getting
         val jvmMain by getting
         val jsMain by getting
 
-        // Создаем наш промежуточный sourceSet для всего, кроме JS
         val nonJsMain by creating {
             dependsOn(commonMain)
         }
 
-        // Подключаем таргеты к nonJsMain
         androidMain.dependsOn(nonJsMain)
         iosMain.dependsOn(nonJsMain)
         jvmMain.dependsOn(nonJsMain)
@@ -85,9 +79,19 @@ kotlin {
 
             implementation(libs.jetbrains.navigation3.ui)
 
-            implementation(project(":data:database"))
-            implementation(project(":features:entries:impl"))
             implementation(project(":common:network"))
+            implementation(project(":common:ui"))
+
+            implementation(project(":data:database"))
+
+            implementation(project(":features:entries:api"))
+            implementation(project(":features:entries:impl"))
+            implementation(project(":features:auth:api"))
+            implementation(project(":features:auth:impl"))
+            implementation(project(":features:profile:api"))
+            implementation(project(":features:profile:impl"))
+            implementation(project(":features:stats:api"))
+            implementation(project(":features:stats:impl"))
         }
 
         nonJsMain.dependencies {

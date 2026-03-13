@@ -1,6 +1,7 @@
 package com.kindaboii.journal.network
 
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.logging.LogLevel
 import io.github.jan.supabase.postgrest.Postgrest
@@ -13,6 +14,7 @@ fun createSupabaseClient(): SupabaseClient =
     ) {
 
         defaultLogLevel = LogLevel.INFO
+        install(Auth)
         install(Postgrest) {
             defaultSchema = ApiConfig.SUPABASE_SCHEMA
         }

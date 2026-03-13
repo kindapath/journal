@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
@@ -8,6 +8,8 @@
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
+
     androidLibrary {
         namespace = "com.kindaboii.journal.features.entries.impl"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -44,8 +46,7 @@ kotlin {
         val androidMain by getting
         val jvmMain by getting
         val jsMain by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
+        val iosMain by getting
 
         val nonJsMain by creating {
             dependsOn(commonMain)
@@ -53,8 +54,7 @@ kotlin {
 
         androidMain.dependsOn(nonJsMain)
         jvmMain.dependsOn(nonJsMain)
-        iosArm64Main.dependsOn(nonJsMain)
-        iosSimulatorArm64Main.dependsOn(nonJsMain)
+        iosMain.dependsOn(nonJsMain)
 
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -85,10 +85,18 @@ kotlin {
 
             implementation(project(":features:entries:api"))
             implementation(project(":features:entries:schema"))
+            implementation(project(":features:auth:api"))
+            implementation(project(":features:profile:api"))
+            implementation(project(":features:stats:api"))
         }
 
         nonJsMain.dependencies {
             implementation(libs.powersync.connector.supabase)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.openhtmltopdf.pdfbox)
+            implementation(libs.jsoup)
         }
     }
 }

@@ -8,7 +8,6 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import androidx.lifecycle.ViewModel
@@ -22,6 +21,8 @@ class CreateEntryViewModel(
 ) : ViewModel() {
     private val _viewState = MutableStateFlow<CreateEntryViewState>(CreateEntryViewState.Empty)
     val viewState: StateFlow<CreateEntryViewState> = _viewState.asStateFlow()
+
+
     private var editingEntry: Entry? = null
     private var loadJob: Job? = null
 
@@ -31,7 +32,7 @@ class CreateEntryViewModel(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             runCatching {
-                repository.getEntryById(entryId).firstOrNull()
+                repository.getEntryById(entryId)
             }
                 .onSuccess { entry ->
                     editingEntry = entry
@@ -43,6 +44,7 @@ class CreateEntryViewModel(
                                 title = entry.title.orEmpty(),
                                 body = entry.body.orEmpty(),
                                 mood = entry.mood ?: defaultMood(),
+                                hasMoodCheckIn = entry.mood != null,
                                 isSaving = it.data.isSaving,
                             )
                         }
@@ -64,11 +66,25 @@ class CreateEntryViewModel(
     }
 
     fun onMoodChange(mood: Mood) {
-        _viewState.update { it.data.copy(mood = mood) }
+        _viewState.update { it.data.copy(mood = mood, hasMoodCheckIn = true) }
+    }
+
+    fun onMoodClear() {
+        _viewState.update {
+            it.data.copy(
+                mood = defaultMood(),
+                hasMoodCheckIn = false,
+            )
+        }
     }
 
     fun onDone(onSuccess: () -> Unit) {
-        if (_viewState.value.data.isSaving) return
+        val state = _viewState.value.data
+        if (state.title.isBlank() && state.body.isBlank() && !state.hasMoodCheckIn) {
+            onSuccess()
+            return
+        }
+        if (state.isSaving) return
         viewModelScope.launch {
             _viewState.update { it.data.copy(isSaving = true) }
 
@@ -92,9 +108,10 @@ class CreateEntryViewModel(
         val now = nowInstant()
         val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
         val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
-        val mood = _viewState.value.data.mood
+        val mood = if (_viewState.value.data.hasMoodCheckIn) _viewState.value.data.mood else null
         return Entry(
             id = Uuid.random().toString(),
+            userId = "",
             title = trimmedTitle,
             body = trimmedBody,
             mood = mood,
@@ -108,7 +125,7 @@ class CreateEntryViewModel(
         val now = nowInstant()
         val trimmedTitle = _viewState.value.data.title.trim().ifEmpty { null }
         val trimmedBody = _viewState.value.data.body.trim().ifEmpty { null }
-        val mood = _viewState.value.data.mood
+        val mood = if (_viewState.value.data.hasMoodCheckIn) _viewState.value.data.mood else null
         return existing.copy(
             title = trimmedTitle,
             body = trimmedBody,
@@ -120,8 +137,8 @@ class CreateEntryViewModel(
 
     private fun defaultMood(): Mood = Mood(
         value = 50,
-        emotions = listOf("Calm", "Focused", "Hopeful"),
-        influences = listOf("Work", "Rest", "Reflection"),
+        emotions = emptyList(),
+        influences = emptyList(),
     )
 
     private fun nowInstant(): Instant =

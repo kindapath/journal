@@ -4,6 +4,7 @@ import kotlin.time.Instant
 
 data class Entry(
     val id: String,
+    val userId: String,
     val title: String?,
     val body: String?,
     val mood: Mood?,

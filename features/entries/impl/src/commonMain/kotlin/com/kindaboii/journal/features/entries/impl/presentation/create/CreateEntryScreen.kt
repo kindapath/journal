@@ -11,19 +11,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -35,6 +42,14 @@ import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.api.models.Mood
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
+import com.kindaboii.journal.features.entries.impl.presentation.create.moodcheckin.CollapsedMoodBar
+import com.kindaboii.journal.features.entries.impl.presentation.create.moodcheckin.MoodCheckInSheet
+import androidx.compose.ui.draw.clip
+import journal.features.entries.impl.generated.resources.Res
+import journal.features.entries.impl.generated.resources.close_24px
+import journal.features.entries.impl.generated.resources.icon_arrow_back_24
+import journal.features.entries.impl.generated.resources.icon_check_24
+import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Clock
 import org.koin.compose.koinInject
 
@@ -65,6 +80,7 @@ fun CreateEntryScreen(
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
                     onMoodChange = viewModel::onMoodChange,
+                    onMoodClear = viewModel::onMoodClear,
                 )
                 LayoutType.Compact -> CreateEntryCompactScreen(
                     viewState = viewState,
@@ -73,6 +89,7 @@ fun CreateEntryScreen(
                     onTitleChange = viewModel::onTitleChange,
                     onBodyChange = viewModel::onBodyChange,
                     onMoodChange = viewModel::onMoodChange,
+                    onMoodClear = viewModel::onMoodClear,
                 )
             }
         }
@@ -87,6 +104,7 @@ private fun CreateEntryExpandedScreen(
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
     onMoodChange: (Mood) -> Unit,
+    onMoodClear: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         CreateEntryScaffold(
@@ -96,6 +114,7 @@ private fun CreateEntryExpandedScreen(
             onTitleChange = onTitleChange,
             onBodyChange = onBodyChange,
             onMoodChange = onMoodChange,
+            onMoodClear = onMoodClear,
         )
     }
 }
@@ -108,6 +127,7 @@ private fun CreateEntryCompactScreen(
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
     onMoodChange: (Mood) -> Unit,
+    onMoodClear: () -> Unit,
 ) {
     CreateEntryScaffold(
         viewState = viewState,
@@ -116,6 +136,7 @@ private fun CreateEntryCompactScreen(
         onTitleChange = onTitleChange,
         onBodyChange = onBodyChange,
         onMoodChange = onMoodChange,
+        onMoodClear = onMoodClear,
     )
 }
 
@@ -127,6 +148,7 @@ private fun CreateEntryScaffold(
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
     onMoodChange: (Mood) -> Unit,
+    onMoodClear: () -> Unit,
 ) {
     Scaffold(
         topBar = { CreateEntryTopBar(onBack = onBack, onDone = onDone) },
@@ -140,9 +162,11 @@ private fun CreateEntryScaffold(
             title = viewState.title,
             body = viewState.body,
             mood = viewState.mood,
+            hasMoodCheckIn = viewState.hasMoodCheckIn,
             onTitleChange = onTitleChange,
             onBodyChange = onBodyChange,
             onMoodChange = onMoodChange,
+            onMoodClear = onMoodClear,
         )
     }
 }
@@ -158,40 +182,42 @@ private fun CreateEntryTopBar(
         modifier = Modifier.padding(top = 24.dp),
         windowInsets = TopAppBarDefaults.windowInsets,
         navigationIcon = {
-            Text(
-                text = "Назад",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+            Box(
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                        shape = MaterialTheme.shapes.small,
-                    )
+                    .padding(start = 8.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
                     .clickable { onBack() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
                     .pointerHoverIcon(PointerIcon.Hand),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.icon_arrow_back_24),
+                    contentDescription = "Назад",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         },
         actions = {
-            Text(
-                text = "Ещё",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+            Box(
                 modifier = Modifier
-                    .padding(end = 16.dp)
-                    .pointerHoverIcon(PointerIcon.Hand),
-            )
-            Text(
-                text = "Готово",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .padding(end = 16.dp)
+                    .padding(end = 8.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .clickable { onDone() }
                     .pointerHoverIcon(PointerIcon.Hand),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.icon_check_24),
+                    contentDescription = "Готово",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
@@ -205,9 +231,11 @@ private fun CreateEntryContent(
     title: String,
     body: String,
     mood: Mood,
+    hasMoodCheckIn: Boolean,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
     onMoodChange: (Mood) -> Unit,
+    onMoodClear: () -> Unit,
 ) {
     val time = Clock.System.now()
     Column(
@@ -218,6 +246,38 @@ private fun CreateEntryContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        if (hasMoodCheckIn) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                MoodHeaderBar(
+                    mood = mood.value,
+                    emotions = mood.emotions,
+                    influences = mood.influences,
+                    time = time,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    height = 84.dp,
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 8.dp, end = 8.dp)
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                            shape = CircleShape,
+                        )
+                        .clickable { onMoodClear() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.close_24px),
+                        contentDescription = "Удалить результат настроения",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
+        }
+
         BasicTextField(
             value = title,
             onValueChange = onTitleChange,
@@ -263,18 +323,27 @@ private fun CreateEntryContent(
             },
         )
         Spacer(modifier = Modifier.weight(1f))
-        MoodHeaderBar(
-            mood = mood.value,
-            emotions = mood.emotions,
-            influences = mood.influences,
+
+        var showMoodSheet by remember { mutableStateOf(false) }
+
+        CollapsedMoodBar(
+            mood = mood,
             time = time,
+            onClick = { showMoodSheet = true },
+            modifier = Modifier.align(Alignment.End),
         )
-        Slider(
-            value = mood.value.toFloat(),
-            onValueChange = { onMoodChange(mood.copy(value = it.toLong())) },
-            valueRange = 1f..100f,
-            modifier = Modifier.padding(top = 8.dp),
-        )
+
+        if (showMoodSheet) {
+            MoodCheckInSheet(
+                currentMood = mood,
+                onDismiss = { showMoodSheet = false },
+                onConfirm = { newMood ->
+                    onMoodChange(newMood)
+                    showMoodSheet = false
+                },
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
     }
 }

@@ -1,16 +1,23 @@
 package com.kindaboii.journal.di
 
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.PowerSyncSyncManager
-import com.kindaboii.journal.features.entries.impl.data.database.datasource.remote.SyncManager
+import com.kindaboii.journal.domain.AuthService
 import com.kindaboii.journal.network.ApiConfig
 import com.powersync.connector.supabase.SupabaseConnector
-import org.koin.core.module.dsl.bind
-import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 internal fun powerSyncModule() = module {
-    single {
-        if (ApiConfig.POWERSYNC_DEV_TOKEN.isNotBlank()) {
+    factory<SupabaseConnector> {
+        // Skip if PowerSync URL not configured
+        if (ApiConfig.POWERSYNC_URL.isBlank()) {
+            // Return a stub connector that won't be used
+            return@factory SupabaseConnector(
+                supabaseUrl = "",
+                supabaseKey = "",
+                powerSyncEndpoint = "",
+            )
+        }
+
+        val connector = if (ApiConfig.POWERSYNC_DEV_TOKEN.isNotBlank() && ApiConfig.DEBUG) {
             DevTokenSupabaseConnector(
                 supabaseUrl = ApiConfig.SUPABASE_URL,
                 supabaseKey = ApiConfig.SUPABASE_CLIENT_API_KEY,
@@ -18,12 +25,18 @@ internal fun powerSyncModule() = module {
                 devToken = ApiConfig.POWERSYNC_DEV_TOKEN,
             )
         } else {
-            SupabaseConnector(
+            if (ApiConfig.POWERSYNC_DEV_TOKEN.isNotBlank() && !ApiConfig.DEBUG) {
+                println("Ignoring POWERSYNC_DEV_TOKEN because debug mode is disabled.")
+            }
+
+            SessionTokenSupabaseConnector(
                 supabaseUrl = ApiConfig.SUPABASE_URL,
                 supabaseKey = ApiConfig.SUPABASE_CLIENT_API_KEY,
                 powerSyncEndpoint = ApiConfig.POWERSYNC_URL,
+                authService = get<AuthService>(),
             )
         }
+
+        connector
     }
-    singleOf(::PowerSyncSyncManager) { bind<SyncManager>() }
 }

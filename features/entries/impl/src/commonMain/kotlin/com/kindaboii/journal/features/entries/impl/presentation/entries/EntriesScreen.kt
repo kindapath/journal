@@ -1,6 +1,9 @@
-﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
+package com.kindaboii.journal.features.entries.impl.presentation.entries
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,14 +21,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -39,21 +41,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
@@ -64,9 +69,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.kindaboii.journal.common.ui.fadingEdges
+import androidx.compose.ui.unit.sp
+import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
@@ -74,27 +81,27 @@ import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
+import journal.features.entries.impl.generated.resources.icon_export_24
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
-
-import kotlin.time.Instant
+import journal.features.entries.impl.generated.resources.journal_logo
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.ui.unit.sp
-import journal.features.entries.impl.generated.resources.journal_logo
+import kotlin.time.Instant
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
-
 @Composable
 fun EntriesScreen(
+    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onEditEntry: (String) -> Unit,
 ) {
     val viewModel: EntriesViewModel = koinInject()
-    val uiState by viewModel.uiState.collectAsState()
+    val viewState by viewModel.viewState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -104,17 +111,27 @@ fun EntriesScreen(
         withLayoutType { layoutType ->
             when (layoutType) {
                 LayoutType.Expanded -> EntriesExpandedScreen(
-                    uiState = uiState,
+                    viewState = viewState,
+                    onSignOut = onSignOut,
+                    onOpenProfile = onOpenProfile,
+                    onOpenStats = onOpenStats,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
+                    onExportEntry = viewModel::onExportEntry,
+                    onExportAll = viewModel::onExportAll,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
-                    uiState = uiState,
+                    viewState = viewState,
+                    onSignOut = onSignOut,
+                    onOpenProfile = onOpenProfile,
+                    onOpenStats = onOpenStats,
                     onAddEntry = onAddEntry,
                     onDeleteEntry = viewModel::onDeleteEntry,
                     onEditEntry = onEditEntry,
+                    onExportEntry = viewModel::onExportEntry,
+                    onExportAll = viewModel::onExportAll,
                 )
             }
         }
@@ -123,46 +140,71 @@ fun EntriesScreen(
 
 @Composable
 private fun EntriesExpandedScreen(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
+    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
-            uiState = uiState,
+            viewState = viewState,
             layoutType = LayoutType.Expanded,
+            onSignOut = onSignOut,
+            onOpenProfile = onOpenProfile,
+            onOpenStats = onOpenStats,
             onAddEntry = onAddEntry,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
+            onExportEntry = onExportEntry,
+            onExportAll = onExportAll,
         )
     }
 }
 
 @Composable
 private fun EntriesCompactScreen(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
+    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     EntriesScaffold(
-        uiState = uiState,
+        viewState = viewState,
         layoutType = LayoutType.Compact,
+        onSignOut = onSignOut,
+        onOpenProfile = onOpenProfile,
+        onOpenStats = onOpenStats,
         onAddEntry = onAddEntry,
         onDeleteEntry = onDeleteEntry,
         onEditEntry = onEditEntry,
+        onExportEntry = onExportEntry,
+        onExportAll = onExportAll,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesScaffold(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     layoutType: LayoutType,
+    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntry: () -> Unit,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
+    onExportAll: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
@@ -170,6 +212,10 @@ private fun EntriesScaffold(
         topBar = {
             EntriesTopBar(
                 scrollBehavior = scrollBehavior,
+                onSignOut = onSignOut,
+                onOpenProfile = onOpenProfile,
+                onOpenStats = onOpenStats,
+                onExportAll = onExportAll,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -177,12 +223,13 @@ private fun EntriesScaffold(
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
     ) { paddingValues ->
         EntriesContent(
-            uiState = uiState,
+            viewState = viewState,
             layoutType = layoutType,
             paddingValues = paddingValues,
             scrollBehavior = scrollBehavior,
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
+            onExportEntry = onExportEntry,
         )
     }
 }
@@ -190,6 +237,10 @@ private fun EntriesScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesTopBar(
+    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenStats: () -> Unit,
+    onExportAll: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -200,8 +251,8 @@ private fun EntriesTopBar(
         title = {
             Text(
                 text = "Дневник",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
@@ -210,16 +261,28 @@ private fun EntriesTopBar(
                 modifier = Modifier.padding(end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.icon_more_horiz_24),
-                    contentDescription = "Ещё",
-                    tint = MaterialTheme.colorScheme.onSurface,
+                val moreHoverSource = remember { MutableInteractionSource() }
+                val moreHovered by moreHoverSource.collectIsHoveredAsState()
+                Box(
                     modifier = Modifier
-                        .padding(start = 12.dp)
-                        .size(32.dp)
-                        .clickable { menuExpanded.value = true }
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = if (moreHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .hoverable(moreHoverSource)
+                        .clickable(interactionSource = moreHoverSource, indication = null) { menuExpanded.value = true }
                         .pointerHoverIcon(PointerIcon.Hand),
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_more_horiz_24),
+                        contentDescription = "Ещё",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
                 DropdownMenu(
                     expanded = menuExpanded.value,
                     onDismissRequest = { menuExpanded.value = false },
@@ -227,6 +290,42 @@ private fun EntriesTopBar(
                     containerColor = menuBackground,
                     modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
                 ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text("Профиль")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            onOpenProfile()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Статистика")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            onOpenStats()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Экспорт в PDF")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            onExportAll()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Выйти из аккаунта")
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            onSignOut()
+                        },
+                    )
                 }
             }
         },
@@ -236,7 +335,7 @@ private fun EntriesTopBar(
             titleContentColor = MaterialTheme.colorScheme.onBackground,
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        modifier = Modifier.padding(top = 24.dp, bottom = 0.dp),
+        modifier = Modifier.padding(top = 32.dp),
         windowInsets = TopAppBarDefaults.windowInsets,
         scrollBehavior = scrollBehavior,
     )
@@ -245,18 +344,18 @@ private fun EntriesTopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesContent(
-    uiState: EntriesUiState,
+    viewState: EntriesViewState,
     layoutType: LayoutType,
     paddingValues: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
 ) {
     val listState = remember { LazyListState() }
 
-    // TODO: wtf i dont know, change later
-    val listChangeKey = when (uiState) {
-        is EntriesUiState.Content -> uiState.entries.firstOrNull()?.id to uiState.entries.size
+    val listChangeKey = when (viewState) {
+        is EntriesViewState.Content -> viewState.entries.firstOrNull()?.id to viewState.entries.size
         else -> null
     }
     LaunchedEffect(listChangeKey) {
@@ -264,23 +363,23 @@ private fun EntriesContent(
             listState.scrollToItem(0)
         }
     }
-    //
 
     val maxWidth = if (layoutType == LayoutType.Expanded) 900.dp else Dp.Unspecified
     AnimatedContent(
-        targetState = uiState::class,
+        targetState = viewState::class,
         label = "entries_state",
     ) {
-        when (uiState) {
-            EntriesUiState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
-            EntriesUiState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
-            is EntriesUiState.Content -> EntriesListCompact(
-                entries = uiState.entries,
+        when (viewState) {
+            EntriesViewState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
+            EntriesViewState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
+            is EntriesViewState.Content -> EntriesListCompact(
+                entries = viewState.entries,
                 maxWidth = maxWidth,
                 paddingValues = paddingValues,
                 scrollBehavior = scrollBehavior,
                 onDeleteEntry = onDeleteEntry,
                 onEditEntry = onEditEntry,
+                onExportEntry = onExportEntry,
                 listState = listState,
             )
         }
@@ -297,8 +396,8 @@ private fun EntriesListCompact(
     listState: LazyListState,
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
+    onExportEntry: (Entry) -> Unit,
 ) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -310,9 +409,8 @@ private fun EntriesListCompact(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = maxWidth)
-                .padding(top = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
+                .widthIn(max = maxWidth),
+            contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -321,6 +419,7 @@ private fun EntriesListCompact(
                     entry = entry,
                     onDeleteEntry = { onDeleteEntry(entry.id) },
                     onEditEntry = { onEditEntry(entry.id) },
+                    onExportEntry = { onExportEntry(entry) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -330,12 +429,12 @@ private fun EntriesListCompact(
     }
 }
 
-
 @Composable
 private fun EntryCard(
     entry: Entry,
     onDeleteEntry: () -> Unit,
     onEditEntry: () -> Unit,
+    onExportEntry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val menuExpanded = remember { mutableStateOf(false) }
@@ -382,7 +481,7 @@ private fun EntryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(top = if (entry.mood == null) 12.dp else 0.dp, bottom = 8.dp),
         ) {
             entry.mood?.let { mood ->
                 MoodHeaderBar(
@@ -429,7 +528,7 @@ private fun EntryCard(
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
                     modifier = Modifier
-                        .padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+                        .padding(top = 8.dp, bottom = 4.dp, start = 4.dp, end = 4.dp),
                 )
             }
 
@@ -455,7 +554,9 @@ private fun EntryCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(24.dp)
+                            .clip(CircleShape)
                             .clickable { menuExpanded.value = true }
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .onGloballyPositioned { coordinates ->
                                 val position = coordinates.positionInWindow()
                                 anchorLeftPx.intValue = position.x.toInt()
@@ -484,6 +585,18 @@ private fun EntryCard(
                             onClick = {
                                 menuExpanded.value = false
                                 onEditEntry()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_export_24,
+                                    text = "Экспорт в PDF",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onExportEntry()
                             },
                         )
                         DropdownMenuItem(
@@ -525,7 +638,6 @@ private fun formatDate(date: Instant): String {
     return "${localDate.day} $month ${localDate.year}"
 }
 
-
 @Composable
 private fun AddEntryFab(
     onAddEntry: () -> Unit,
@@ -549,7 +661,7 @@ private fun AddEntryFab(
 
 @Composable
 private fun MenuItemContent(
-    iconRes: org.jetbrains.compose.resources.DrawableResource,
+    iconRes: DrawableResource,
     text: String,
     color: Color? = null,
 ) {
@@ -592,7 +704,7 @@ private fun EntriesEmptyState(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Это твой дневник",
+            text = "Еще нет записей",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -625,23 +737,19 @@ private fun EntriesLoadingState(
     }
 }
 
-
 @Composable
 private fun appBackgroundBrush(): Brush {
-
-    val darkTheme = isSystemInDarkTheme()
-
-    val colors = if (darkTheme) {
+    val colors = if (isSystemInDarkTheme()) {
         listOf(
-            Color(0xFF0C0F1F),
-            Color(0xFF362644),
-            Color(0xFF5F3C69),
+            JournalColors.BackgroundDark,
+            JournalColors.SurfaceDark,
+            JournalColors.SecondaryDark,
         )
     } else {
         listOf(
-            Color(0xFFF8F6F5),
-            Color(0xFFFAF3F3),
-            Color(0xFFF4EFF5),
+            JournalColors.BackgroundLight,
+            JournalColors.SurfaceVariantLight,
+            JournalColors.SurfaceTintLight,
         )
     }
     return Brush.verticalGradient(colors = colors)
