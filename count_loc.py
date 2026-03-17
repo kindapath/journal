@@ -19,7 +19,6 @@ CATEGORIES = {
     "androidMain": "Android-специфичный",
     "jvmMain": "Desktop-специфичный (JVM)",
     "jsMain": "Web-специфичный (JS)",
-    "iosMain": "iOS-специфичный",
 }
 
 # Точки входа — отдельные модули
@@ -27,8 +26,11 @@ ENTRY_POINTS = {
     "androidApp": "Android (точка входа)",
     "desktopApp": "Desktop (точка входа)",
     "webApp": "Web (точка входа)",
-    "iosApp": "iOS (точка входа)",
 }
+
+# Пропускаемые директории (iOS и прочее)
+SKIP_DIRS = {"iosMain", "iosApp", "iosTest"}
+
 
 def count_loc(filepath):
     """Считает строки кода без пустых строк и однострочных комментариев."""
@@ -64,6 +66,10 @@ def count_loc(filepath):
 def classify_file(filepath):
     """Определяет категорию файла по пути."""
     parts = Path(filepath).parts
+
+    # Пропускаем iOS
+    if SKIP_DIRS & set(parts):
+        return None
 
     # Точки входа
     for ep in ENTRY_POINTS:
@@ -107,8 +113,8 @@ def main():
     total_files = sum(v["files"] for v in results.values())
 
     # Порядок вывода
-    order = ["commonMain", "nonJsMain", "androidMain", "jvmMain", "jsMain", "iosMain",
-             "androidApp", "desktopApp", "webApp", "iosApp"]
+    order = ["commonMain", "nonJsMain", "androidMain", "jvmMain", "jsMain",
+             "androidApp", "desktopApp", "webApp"]
 
     print(f"\n{'Категория':<40} {'Файлы':>6} {'Строки':>8} {'Доля':>7}")
     print("-" * 65)
@@ -130,7 +136,6 @@ def main():
     android_specific = results["androidMain"]["loc"] + results["androidApp"]["loc"]
     desktop_specific = results["jvmMain"]["loc"] + results["desktopApp"]["loc"]
     web_specific = results["jsMain"]["loc"] + results["webApp"]["loc"]
-    ios_specific = results["iosMain"]["loc"] + results.get("iosApp", {"loc": 0})["loc"]
 
     print(f"\n{'=' * 70}")
     print("ДОЛЯ ПЕРЕИСПОЛЬЗУЕМОГО КОДА ПО ПЛАТФОРМАМ")
@@ -144,7 +149,6 @@ def main():
     platform_reuse("Android", shared_all + shared_native, android_specific)
     platform_reuse("Desktop (JVM)", shared_all + shared_native, desktop_specific)
     platform_reuse("Web", shared_all, web_specific)
-    platform_reuse("iOS", shared_all + shared_native, ios_specific)
 
     print(f"\n  Общий код (commonMain):           {shared_all} LoC ({shared_all/total_loc*100:.1f}% от общего объёма)")
     print(f"  Общий нативный (nonJsMain):       {shared_native} LoC ({shared_native/total_loc*100:.1f}% от общего объёма)")
