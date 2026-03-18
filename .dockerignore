@@ -1,0 +1,13 @@
+.git
+.idea
+.kotlin
+.gradle
+**/build/
+node_modules/
+local.properties
+*.iml
+androidApp/
+iosApp/
+desktopApp/
+server/
+.DS_Store
