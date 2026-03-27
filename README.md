@@ -95,3 +95,21 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 
 We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
 If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+
+
+# Production сборка для Web
+./gradlew :webApp:jsBrowserProductionWebpack
+
+# Release APK
+./gradlew :androidApp:assembleRelease
+
+# Release Bundle (для Google Play)
+./gradlew :androidApp:bundleRelease
+
+# Создать дистрибутив для текущей ОС
+./gradlew :desktopApp:packageDistributionForCurrentOS
+
+# Или конкретный формат:
+./gradlew :desktopApp:packageDmg   # macOS
+./gradlew :desktopApp:packageMsi   # Windows
+./gradlew :desktopApp:packageDeb   # Linux
