@@ -2,9 +2,12 @@
 .kotlin
 .gradle
 **/build/
-webApp/build/**
+!webApp/build/
+webApp/build/*
 !webApp/build/dist/
+webApp/build/dist/*
 !webApp/build/dist/js/
+webApp/build/dist/js/*
 !webApp/build/dist/js/productionExecutable/
 !webApp/build/dist/js/productionExecutable/**
 xcuserdata
