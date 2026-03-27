@@ -98,7 +98,7 @@ If you face any issues, please report them on [YouTrack](https://youtrack.jetbra
 
 
 # Production сборка для Web
-./gradlew :webApp:jsBrowserProductionWebpack
+./gradlew :webApp:jsBrowserDistribution
 
 # Release APK
 ./gradlew :androidApp:assembleRelease
