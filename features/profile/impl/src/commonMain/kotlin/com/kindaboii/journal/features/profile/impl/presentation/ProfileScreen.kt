@@ -31,10 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.PasswordOutlinedTextField
 import com.kindaboii.journal.common.ui.withLayoutType
 import journal.features.profile.impl.generated.resources.Res
 import journal.features.profile.impl.generated.resources.icon_arrow_back_24
@@ -136,6 +136,12 @@ private fun ProfileContent(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
+                Text(
+                    text = "Изменить email",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
                 OutlinedTextField(
                     value = viewState.currentEmail,
                     onValueChange = {},
@@ -196,27 +202,23 @@ private fun ProfileContent(
                 }
 
                 Text(
-                    text = "Пароль",
+                    text = "Изменить пароль",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                OutlinedTextField(
+                PasswordOutlinedTextField(
                     value = viewState.newPassword,
                     onValueChange = viewModel::onNewPasswordChange,
-                    label = { Text("Новый пароль") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true,
+                    label = "Новый пароль",
                     enabled = !viewState.isUpdatingPassword,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                OutlinedTextField(
+                PasswordOutlinedTextField(
                     value = viewState.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChange,
-                    label = { Text("Подтвердите пароль") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true,
+                    label = "Подтвердите пароль",
                     enabled = !viewState.isUpdatingPassword,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -249,3 +251,4 @@ private fun profileBackgroundBrush(): Brush =
             MaterialTheme.colorScheme.surfaceVariant,
         ),
     )
+

@@ -26,11 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.PasswordOutlinedTextField
 import com.kindaboii.journal.common.ui.withLayoutType
 import org.koin.compose.koinInject
 
@@ -186,14 +186,12 @@ private fun AuthCard(
                 singleLine = true,
             )
 
-            OutlinedTextField(
+            PasswordOutlinedTextField(
                 value = uiState.password,
                 onValueChange = onPasswordChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Пароль") },
-                visualTransformation = PasswordVisualTransformation(),
+                label = "Пароль",
                 enabled = !isBusy && !awaitingConfirmation,
-                singleLine = true,
             )
 
             if (awaitingConfirmation) {
@@ -326,3 +324,4 @@ private fun authBackgroundBrush(): Brush =
             MaterialTheme.colorScheme.surfaceVariant,
         ),
     )
+
