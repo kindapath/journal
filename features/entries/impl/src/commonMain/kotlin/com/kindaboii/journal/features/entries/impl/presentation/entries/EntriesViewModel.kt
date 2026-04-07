@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.presentation.entries
+﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,14 +8,14 @@ import com.kindaboii.journal.features.entries.impl.export.generateAllEntriesHtml
 import com.kindaboii.journal.features.entries.impl.export.generateEntryHtml
 import com.kindaboii.journal.features.entries.impl.export.printHtml
 import kotlinx.coroutines.Dispatchers
-import kotlin.time.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 class EntriesViewModel(
     private val repository: EntryRepository,
@@ -25,6 +25,7 @@ class EntriesViewModel(
 
     private var allEntries: List<Entry> = emptyList()
     private var dateFilter = EntriesDateRangeFilter()
+    private var searchFilter = EntriesSearchFilter()
 
     init {
         viewModelScope.launch {
@@ -42,6 +43,16 @@ class EntriesViewModel(
 
     fun onClearDateFilter() {
         dateFilter = EntriesDateRangeFilter()
+        updateViewState()
+    }
+
+    fun onSearchQueryChange(query: String) {
+        searchFilter = EntriesSearchFilter(query = query)
+        updateViewState()
+    }
+
+    fun onClearSearch() {
+        searchFilter = EntriesSearchFilter()
         updateViewState()
     }
 
@@ -67,21 +78,25 @@ class EntriesViewModel(
     }
 
     private fun updateViewState() {
-        val filteredEntries = allEntries.filterByDateRange(dateFilter)
+        val filteredEntries = allEntries
+            .filterByDateRange(dateFilter)
+            .filterBySearch(searchFilter)
+
         _viewState.value = when {
             allEntries.isEmpty() -> EntriesViewState.Empty(
                 dateFilter = dateFilter,
-                isFiltered = false,
+                searchFilter = searchFilter,
             )
 
             filteredEntries.isEmpty() -> EntriesViewState.Empty(
                 dateFilter = dateFilter,
-                isFiltered = dateFilter.isActive,
+                searchFilter = searchFilter,
             )
 
             else -> EntriesViewState.Content(
                 entries = filteredEntries,
                 dateFilter = dateFilter,
+                searchFilter = searchFilter,
             )
         }
     }
@@ -104,6 +119,31 @@ class EntriesViewModel(
             val matchesFrom = filter.from?.let { createdDate >= it } ?: true
             val matchesTo = filter.to?.let { createdDate <= it } ?: true
             matchesFrom && matchesTo
+        }
+    }
+
+    private fun List<Entry>.filterBySearch(filter: EntriesSearchFilter): List<Entry> {
+        if (!filter.isActive) return this
+
+        val normalizedQuery = filter.query
+            .trim()
+            .lowercase()
+        val terms = normalizedQuery
+            .split(Regex("\\s+"))
+            .filter(String::isNotBlank)
+
+        if (terms.isEmpty()) return this
+
+        return filter { entry ->
+            val searchableText = buildString {
+                entry.title?.trim()?.takeIf(String::isNotEmpty)?.let {
+                    append(it)
+                    append('\n')
+                }
+                entry.body?.trim()?.takeIf(String::isNotEmpty)?.let(::append)
+            }.lowercase()
+
+            terms.all(searchableText::contains)
         }
     }
 

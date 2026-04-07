@@ -1,6 +1,11 @@
 ﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +44,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -54,6 +61,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,9 +92,11 @@ import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
+import journal.features.entries.impl.generated.resources.icon_arrow_drop_up_24px
 import journal.features.entries.impl.generated.resources.icon_dark_mode_24
 import journal.features.entries.impl.generated.resources.icon_date_range_24px
 import journal.features.entries.impl.generated.resources.icon_delete_24
+import journal.features.entries.impl.generated.resources.icon_cancel_24px
 import journal.features.entries.impl.generated.resources.icon_file_export_24px
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
 import journal.features.entries.impl.generated.resources.icon_export_24
@@ -137,6 +147,8 @@ fun EntriesScreen(
                     onExportAll = viewModel::onExportAll,
                     onApplyDateFilter = viewModel::onApplyDateFilter,
                     onClearDateFilter = viewModel::onClearDateFilter,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onClearSearch = viewModel::onClearSearch,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
@@ -151,6 +163,8 @@ fun EntriesScreen(
                     onExportAll = viewModel::onExportAll,
                     onApplyDateFilter = viewModel::onApplyDateFilter,
                     onClearDateFilter = viewModel::onClearDateFilter,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onClearSearch = viewModel::onClearSearch,
                 )
             }
         }
@@ -170,6 +184,8 @@ private fun EntriesExpandedScreen(
     onExportAll: () -> Unit,
     onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
     onClearDateFilter: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
@@ -185,6 +201,8 @@ private fun EntriesExpandedScreen(
             onExportAll = onExportAll,
             onApplyDateFilter = onApplyDateFilter,
             onClearDateFilter = onClearDateFilter,
+            onSearchQueryChange = onSearchQueryChange,
+            onClearSearch = onClearSearch,
         )
     }
 }
@@ -202,6 +220,8 @@ private fun EntriesCompactScreen(
     onExportAll: () -> Unit,
     onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
     onClearDateFilter: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     EntriesScaffold(
         viewState = viewState,
@@ -216,6 +236,8 @@ private fun EntriesCompactScreen(
         onExportAll = onExportAll,
         onApplyDateFilter = onApplyDateFilter,
         onClearDateFilter = onClearDateFilter,
+        onSearchQueryChange = onSearchQueryChange,
+        onClearSearch = onClearSearch,
     )
 }
 
@@ -234,10 +256,13 @@ private fun EntriesScaffold(
     onExportAll: () -> Unit,
     onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
     onClearDateFilter: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
     val dateFilter = viewState.dateFilter()
+    val searchFilter = viewState.searchFilter()
 
     Scaffold(
         topBar = {
@@ -248,8 +273,11 @@ private fun EntriesScaffold(
                 onOpenStats = onOpenStats,
                 onExportAll = onExportAll,
                 dateFilter = dateFilter,
+                searchFilter = searchFilter,
                 onApplyDateFilter = onApplyDateFilter,
                 onClearDateFilter = onClearDateFilter,
+                onSearchQueryChange = onSearchQueryChange,
+                onClearSearch = onClearSearch,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -265,6 +293,7 @@ private fun EntriesScaffold(
             onEditEntry = onEditEntry,
             onExportEntry = onExportEntry,
             onClearDateFilter = onClearDateFilter,
+            onClearSearch = onClearSearch,
         )
     }
 }
@@ -277,16 +306,26 @@ private fun EntriesTopBar(
     onOpenStats: () -> Unit,
     onExportAll: () -> Unit,
     dateFilter: EntriesDateRangeFilter,
+    searchFilter: EntriesSearchFilter,
     onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
     onClearDateFilter: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val themeController = LocalJournalThemeController.current
     val menuExpanded = remember { mutableStateOf(false) }
     val filterDialogVisible = remember { mutableStateOf(false) }
+    val searchVisible = rememberSaveable { mutableStateOf(searchFilter.isActive) }
     val menuShape = RoundedCornerShape(16.dp)
     val menuBackground = MaterialTheme.colorScheme.surfaceVariant
     val menuHeightPx = remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(searchFilter.isActive) {
+        if (searchFilter.isActive) {
+            searchVisible.value = true
+        }
+    }
 
     if (filterDialogVisible.value) {
         EntriesDateRangeFilterDialog(
@@ -303,175 +342,287 @@ private fun EntriesTopBar(
         )
     }
 
-    TopAppBar(
-        title = {
-            Text(
-                text = "Дневник",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        },
-        actions = {
-            Row(
-                modifier = Modifier.padding(end = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val searchHoverSource = remember { MutableInteractionSource() }
-                val searchHovered by searchHoverSource.collectIsHoveredAsState()
-                val filterHoverSource = remember { MutableInteractionSource() }
-                val filterHovered by filterHoverSource.collectIsHoveredAsState()
-                val moreHoverSource = remember { MutableInteractionSource() }
-                val moreHovered by moreHoverSource.collectIsHoveredAsState()
-
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            color = if (searchHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
-                            shape = CircleShape,
-                        )
-                        .hoverable(searchHoverSource)
-                        .clickable(interactionSource = searchHoverSource, indication = null) { }
-                        .pointerHoverIcon(PointerIcon.Hand),
-                    contentAlignment = Alignment.Center,
+    Column {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Дневник",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            },
+            actions = {
+                Row(
+                    modifier = Modifier.padding(end = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_search_24),
-                        contentDescription = "Поиск",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(28.dp),
-                    )
-                }
+                    val searchHoverSource = remember { MutableInteractionSource() }
+                    val searchHovered by searchHoverSource.collectIsHoveredAsState()
+                    val filterHoverSource = remember { MutableInteractionSource() }
+                    val filterHovered by filterHoverSource.collectIsHoveredAsState()
+                    val moreHoverSource = remember { MutableInteractionSource() }
+                    val moreHovered by moreHoverSource.collectIsHoveredAsState()
 
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            color = when {
-                                dateFilter.isActive -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
-                                filterHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                else -> Color.Transparent
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(
+                                color = when {
+                                    searchVisible.value || searchFilter.isActive -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                                    searchHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                    else -> Color.Transparent
+                                },
+                                shape = CircleShape,
+                            )
+                            .hoverable(searchHoverSource)
+                            .clickable(interactionSource = searchHoverSource, indication = null) {
+                                if (searchVisible.value) {
+                                    if (searchFilter.isActive) {
+                                        onClearSearch()
+                                    }
+                                    searchVisible.value = false
+                                } else {
+                                    searchVisible.value = true
+                                }
+                            }
+                            .pointerHoverIcon(PointerIcon.Hand),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_search_24),
+                            contentDescription = if (searchVisible.value || searchFilter.isActive) "Закрыть поиск" else "Поиск",
+                            tint = if (searchVisible.value || searchFilter.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(
+                                color = when {
+                                    dateFilter.isActive -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                                    filterHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                    else -> Color.Transparent
+                                },
+                                shape = CircleShape,
+                            )
+                            .hoverable(filterHoverSource)
+                            .clickable(interactionSource = filterHoverSource, indication = null) { filterDialogVisible.value = true }
+                            .pointerHoverIcon(PointerIcon.Hand),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_date_range_24px),
+                            contentDescription = "Фильтр по датам",
+                            tint = if (dateFilter.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(
+                                color = if (moreHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
+                                shape = CircleShape,
+                            )
+                            .hoverable(moreHoverSource)
+                            .clickable(interactionSource = moreHoverSource, indication = null) { menuExpanded.value = true }
+                            .pointerHoverIcon(PointerIcon.Hand),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_more_horiz_24),
+                            contentDescription = "???",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded.value,
+                        onDismissRequest = { menuExpanded.value = false },
+                        shape = menuShape,
+                        containerColor = menuBackground,
+                        modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = if (themeController.isDarkTheme) Res.drawable.icon_light_mode_24 else Res.drawable.icon_dark_mode_24,
+                                    text = if (themeController.isDarkTheme) "Светлая тема" else "Тёмная тема",
+                                )
                             },
-                            shape = CircleShape,
+                            onClick = {
+                                menuExpanded.value = false
+                                themeController.toggleTheme()
+                            },
                         )
-                        .hoverable(filterHoverSource)
-                        .clickable(interactionSource = filterHoverSource, indication = null) { filterDialogVisible.value = true }
-                        .pointerHoverIcon(PointerIcon.Hand),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_date_range_24px),
-                        contentDescription = "Фильтр по датам",
-                        tint = if (dateFilter.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(28.dp),
-                    )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_person_24px,
+                                    text = "Профиль",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onOpenProfile()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_leaderboard_24px,
+                                    text = "Статистика",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onOpenStats()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_file_export_24px,
+                                    text = "Экспорт в PDF",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onExportAll()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MenuItemContent(
+                                    iconRes = Res.drawable.icon_logout_24px,
+                                    text = "Выйти из аккаунта",
+                                )
+                            },
+                            onClick = {
+                                menuExpanded.value = false
+                                onSignOut()
+                            },
+                        )
+                    }
                 }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                scrolledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+            modifier = Modifier.padding(top = 32.dp),
+            windowInsets = TopAppBarDefaults.windowInsets,
+            scrollBehavior = scrollBehavior,
+        )
 
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            color = if (moreHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
-                            shape = CircleShape,
-                        )
-                        .hoverable(moreHoverSource)
-                        .clickable(interactionSource = moreHoverSource, indication = null) { menuExpanded.value = true }
-                        .pointerHoverIcon(PointerIcon.Hand),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_more_horiz_24),
-                        contentDescription = "Ещё",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(28.dp),
-                    )
-                }
-                DropdownMenu(
-                    expanded = menuExpanded.value,
-                    onDismissRequest = { menuExpanded.value = false },
-                    shape = menuShape,
-                    containerColor = menuBackground,
-                    modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = if (themeController.isDarkTheme) Res.drawable.icon_light_mode_24 else Res.drawable.icon_dark_mode_24,
-                                text = if (themeController.isDarkTheme) "Светлая тема" else "Тёмная тема",
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            themeController.toggleTheme()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = Res.drawable.icon_person_24px,
-                                text = "Профиль",
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            onOpenProfile()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = Res.drawable.icon_leaderboard_24px,
-                                text = "Статистика",
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            onOpenStats()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = Res.drawable.icon_file_export_24px,
-                                text = "Экспорт в PDF",
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            onExportAll()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            MenuItemContent(
-                                iconRes = Res.drawable.icon_logout_24px,
-                                text = "Выйти из аккаунта",
-                            )
-                        },
-                        onClick = {
-                            menuExpanded.value = false
-                            onSignOut()
-                        },
-                    )
-                }
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
-            scrolledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        modifier = Modifier.padding(top = 32.dp),
-        windowInsets = TopAppBarDefaults.windowInsets,
-        scrollBehavior = scrollBehavior,
-    )
+        AnimatedVisibility(
+            visible = searchVisible.value,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically(),
+        ) {
+            EntriesSearchBar(
+                query = searchFilter.query,
+                onQueryChange = onSearchQueryChange,
+                onClearQuery = onClearSearch,
+                onCloseSearch = {
+                    onClearSearch()
+                    searchVisible.value = false
+                },
+            )
+        }
+    }
 }
 
+@Composable
+private fun EntriesSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClearQuery: () -> Unit,
+    onCloseSearch: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.weight(1f),
+            placeholder = {
+                Text(
+                    text = "Поиск по заметкам",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            singleLine = true,
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(Res.drawable.icon_search_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+            },
+            trailingIcon = {
+                if (query.isNotBlank()) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_cancel_24px),
+                        contentDescription = "Очистить поиск",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onClearQuery)
+                            .pointerHoverIcon(PointerIcon.Hand),
+                    )
+                }
+            },
+            shape = RoundedCornerShape(20.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                focusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+                .clickable(onClick = onCloseSearch)
+                .pointerHoverIcon(PointerIcon.Hand),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.icon_arrow_drop_up_24px),
+                contentDescription = "Свернуть поиск",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesDateRangeFilterDialog(
@@ -614,11 +765,18 @@ private fun EntriesContent(
     onEditEntry: (String) -> Unit,
     onExportEntry: (Entry) -> Unit,
     onClearDateFilter: () -> Unit,
+    onClearSearch: () -> Unit,
 ) {
     val listState = remember { LazyListState() }
 
     val listChangeKey = when (viewState) {
-        is EntriesViewState.Content -> viewState.entries.firstOrNull()?.id to viewState.entries.size
+        is EntriesViewState.Content -> listOf(
+            viewState.entries.firstOrNull()?.id,
+            viewState.entries.size.toString(),
+            viewState.searchFilter.query,
+            viewState.dateFilter.from?.toString(),
+            viewState.dateFilter.to?.toString(),
+        )
         else -> null
     }
     LaunchedEffect(listChangeKey) {
@@ -636,9 +794,10 @@ private fun EntriesContent(
             EntriesViewState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
             is EntriesViewState.Empty -> EntriesEmptyState(
                 paddingValues = paddingValues,
-                isFiltered = viewState.isFiltered,
                 dateFilter = viewState.dateFilter,
+                searchFilter = viewState.searchFilter,
                 onClearDateFilter = onClearDateFilter,
+                onClearSearch = onClearSearch,
             )
             is EntriesViewState.Content -> EntriesListCompact(
                 entries = viewState.entries,
@@ -653,7 +812,6 @@ private fun EntriesContent(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EntriesListCompact(
@@ -893,6 +1051,12 @@ private fun EntriesViewState.dateFilter(): EntriesDateRangeFilter = when (this) 
     is EntriesViewState.Content -> dateFilter
 }
 
+private fun EntriesViewState.searchFilter(): EntriesSearchFilter = when (this) {
+    EntriesViewState.Loading -> EntriesSearchFilter()
+    is EntriesViewState.Empty -> searchFilter
+    is EntriesViewState.Content -> searchFilter
+}
+
 private fun EntriesDateRangeFilter.toDisplayText(): String = when {
     from != null && to != null -> "${formatDate(from)} - ${formatDate(to)}"
     from != null -> "От ${formatDate(from)}"
@@ -996,16 +1160,17 @@ private fun MenuItemContent(
 @Composable
 private fun EntriesEmptyState(
     paddingValues: PaddingValues,
-    isFiltered: Boolean,
     dateFilter: EntriesDateRangeFilter,
+    searchFilter: EntriesSearchFilter,
     onClearDateFilter: () -> Unit,
+    onClearSearch: () -> Unit,
 ) {
-    val title = if (isFiltered) {
-        "Нет записей за выбранный период"
-    } else {
-        "Еще нет записей"
+    val title = when {
+        searchFilter.isActive -> "Ничего не найдено"
+        dateFilter.isActive -> "Нет записей за выбранный период"
+        else -> "Еще нет записей"
     }
-    val description = if (isFiltered) {
+    val description = if (searchFilter.isActive || dateFilter.isActive) {
         null
     } else {
         "Сделай свою первую запись.\nНажми на кнопку плюс внизу."
@@ -1042,10 +1207,22 @@ private fun EntriesEmptyState(
                 textAlign = TextAlign.Center,
             )
         }
-        if (isFiltered) {
+        if (searchFilter.isActive || dateFilter.isActive) {
             Spacer(modifier = Modifier.height(12.dp))
-            TextButton(onClick = onClearDateFilter) {
-                Text("Сбросить фильтр")
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (searchFilter.isActive) {
+                    TextButton(onClick = onClearSearch) {
+                        Text("Сбросить поиск")
+                    }
+                }
+                if (dateFilter.isActive) {
+                    TextButton(onClick = onClearDateFilter) {
+                        Text("Сбросить фильтр")
+                    }
+                }
             }
         }
     }
