@@ -3,7 +3,6 @@ package com.kindaboii.journal.features.entries.impl.presentation.entries
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,16 +72,23 @@ import androidx.compose.ui.unit.sp
 import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.LocalJournalThemeController
 import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
+import journal.features.entries.impl.generated.resources.icon_dark_mode_24
 import journal.features.entries.impl.generated.resources.icon_delete_24
+import journal.features.entries.impl.generated.resources.icon_file_export_24px
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
 import journal.features.entries.impl.generated.resources.icon_export_24
+import journal.features.entries.impl.generated.resources.icon_light_mode_24
+import journal.features.entries.impl.generated.resources.icon_leaderboard_24px
+import journal.features.entries.impl.generated.resources.icon_logout_24px
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
+import journal.features.entries.impl.generated.resources.icon_person_24px
 import journal.features.entries.impl.generated.resources.journal_logo
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
@@ -243,6 +249,7 @@ private fun EntriesTopBar(
     onExportAll: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
+    val themeController = LocalJournalThemeController.current
     val menuExpanded = remember { mutableStateOf(false) }
     val menuShape = RoundedCornerShape(16.dp)
     val menuBackground = MaterialTheme.colorScheme.surfaceVariant
@@ -292,7 +299,22 @@ private fun EntriesTopBar(
                 ) {
                     DropdownMenuItem(
                         text = {
-                            Text("Профиль")
+                            MenuItemContent(
+                                iconRes = if (themeController.isDarkTheme) Res.drawable.icon_light_mode_24 else Res.drawable.icon_dark_mode_24,
+                                text = if (themeController.isDarkTheme) "Светлая тема" else "Тёмная тема",
+                            )
+                        },
+                        onClick = {
+                            menuExpanded.value = false
+                            themeController.toggleTheme()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            MenuItemContent(
+                                iconRes = Res.drawable.icon_person_24px,
+                                text = "Профиль",
+                            )
                         },
                         onClick = {
                             menuExpanded.value = false
@@ -301,7 +323,10 @@ private fun EntriesTopBar(
                     )
                     DropdownMenuItem(
                         text = {
-                            Text("Статистика")
+                            MenuItemContent(
+                                iconRes = Res.drawable.icon_leaderboard_24px,
+                                text = "Статистика",
+                            )
                         },
                         onClick = {
                             menuExpanded.value = false
@@ -310,7 +335,10 @@ private fun EntriesTopBar(
                     )
                     DropdownMenuItem(
                         text = {
-                            Text("Экспорт в PDF")
+                            MenuItemContent(
+                                iconRes = Res.drawable.icon_file_export_24px,
+                                text = "Экспорт в PDF",
+                            )
                         },
                         onClick = {
                             menuExpanded.value = false
@@ -319,7 +347,10 @@ private fun EntriesTopBar(
                     )
                     DropdownMenuItem(
                         text = {
-                            Text("Выйти из аккаунта")
+                            MenuItemContent(
+                                iconRes = Res.drawable.icon_logout_24px,
+                                text = "Выйти из аккаунта",
+                            )
                         },
                         onClick = {
                             menuExpanded.value = false
@@ -739,7 +770,8 @@ private fun EntriesLoadingState(
 
 @Composable
 private fun appBackgroundBrush(): Brush {
-    val colors = if (isSystemInDarkTheme()) {
+    val isDarkTheme = LocalJournalThemeController.current.isDarkTheme
+    val colors = if (isDarkTheme) {
         listOf(
             JournalColors.BackgroundDark,
             JournalColors.SurfaceDark,

@@ -2,7 +2,6 @@ package com.kindaboii.journal.features.stats.impl.presentation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.colors.JournalColors
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
+import com.kindaboii.journal.common.ui.LocalJournalThemeController
 import com.kindaboii.journal.common.ui.withLayoutType
 import kotlin.time.Clock
 import kotlinx.datetime.DatePeriod
@@ -397,7 +397,7 @@ private fun pluralDays(days: Int): String = when {
 
 @Composable
 private fun statsBackgroundBrush(): Brush =
-    if (isSystemInDarkTheme()) {
+    if (LocalJournalThemeController.current.isDarkTheme) {
         Brush.verticalGradient(
             colors = listOf(
                 JournalColors.BackgroundDark,
