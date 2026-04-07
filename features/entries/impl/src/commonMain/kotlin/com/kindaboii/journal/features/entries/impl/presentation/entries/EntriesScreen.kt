@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.entries.impl.presentation.entries
+﻿package com.kindaboii.journal.features.entries.impl.presentation.entries
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
@@ -22,9 +22,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,9 +38,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,6 +85,7 @@ import com.kindaboii.journal.features.entries.impl.presentation.components.MoodH
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_dark_mode_24
+import journal.features.entries.impl.generated.resources.icon_date_range_24px
 import journal.features.entries.impl.generated.resources.icon_delete_24
 import journal.features.entries.impl.generated.resources.icon_file_export_24px
 import journal.features.entries.impl.generated.resources.icon_edit_note_24
@@ -89,9 +95,12 @@ import journal.features.entries.impl.generated.resources.icon_leaderboard_24px
 import journal.features.entries.impl.generated.resources.icon_logout_24px
 import journal.features.entries.impl.generated.resources.icon_more_horiz_24
 import journal.features.entries.impl.generated.resources.icon_person_24px
+import journal.features.entries.impl.generated.resources.icon_search_24
 import journal.features.entries.impl.generated.resources.journal_logo
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 import org.jetbrains.compose.resources.DrawableResource
@@ -126,6 +135,8 @@ fun EntriesScreen(
                     onEditEntry = onEditEntry,
                     onExportEntry = viewModel::onExportEntry,
                     onExportAll = viewModel::onExportAll,
+                    onApplyDateFilter = viewModel::onApplyDateFilter,
+                    onClearDateFilter = viewModel::onClearDateFilter,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
@@ -138,6 +149,8 @@ fun EntriesScreen(
                     onEditEntry = onEditEntry,
                     onExportEntry = viewModel::onExportEntry,
                     onExportAll = viewModel::onExportAll,
+                    onApplyDateFilter = viewModel::onApplyDateFilter,
+                    onClearDateFilter = viewModel::onClearDateFilter,
                 )
             }
         }
@@ -155,6 +168,8 @@ private fun EntriesExpandedScreen(
     onEditEntry: (String) -> Unit,
     onExportEntry: (Entry) -> Unit,
     onExportAll: () -> Unit,
+    onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
+    onClearDateFilter: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
@@ -168,6 +183,8 @@ private fun EntriesExpandedScreen(
             onEditEntry = onEditEntry,
             onExportEntry = onExportEntry,
             onExportAll = onExportAll,
+            onApplyDateFilter = onApplyDateFilter,
+            onClearDateFilter = onClearDateFilter,
         )
     }
 }
@@ -183,6 +200,8 @@ private fun EntriesCompactScreen(
     onEditEntry: (String) -> Unit,
     onExportEntry: (Entry) -> Unit,
     onExportAll: () -> Unit,
+    onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
+    onClearDateFilter: () -> Unit,
 ) {
     EntriesScaffold(
         viewState = viewState,
@@ -195,6 +214,8 @@ private fun EntriesCompactScreen(
         onEditEntry = onEditEntry,
         onExportEntry = onExportEntry,
         onExportAll = onExportAll,
+        onApplyDateFilter = onApplyDateFilter,
+        onClearDateFilter = onClearDateFilter,
     )
 }
 
@@ -211,9 +232,13 @@ private fun EntriesScaffold(
     onEditEntry: (String) -> Unit,
     onExportEntry: (Entry) -> Unit,
     onExportAll: () -> Unit,
+    onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
+    onClearDateFilter: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
+    val dateFilter = viewState.dateFilter()
+
     Scaffold(
         topBar = {
             EntriesTopBar(
@@ -222,6 +247,9 @@ private fun EntriesScaffold(
                 onOpenProfile = onOpenProfile,
                 onOpenStats = onOpenStats,
                 onExportAll = onExportAll,
+                dateFilter = dateFilter,
+                onApplyDateFilter = onApplyDateFilter,
+                onClearDateFilter = onClearDateFilter,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -236,6 +264,7 @@ private fun EntriesScaffold(
             onDeleteEntry = onDeleteEntry,
             onEditEntry = onEditEntry,
             onExportEntry = onExportEntry,
+            onClearDateFilter = onClearDateFilter,
         )
     }
 }
@@ -247,13 +276,33 @@ private fun EntriesTopBar(
     onOpenProfile: () -> Unit,
     onOpenStats: () -> Unit,
     onExportAll: () -> Unit,
+    dateFilter: EntriesDateRangeFilter,
+    onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
+    onClearDateFilter: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val themeController = LocalJournalThemeController.current
     val menuExpanded = remember { mutableStateOf(false) }
+    val filterDialogVisible = remember { mutableStateOf(false) }
     val menuShape = RoundedCornerShape(16.dp)
     val menuBackground = MaterialTheme.colorScheme.surfaceVariant
     val menuHeightPx = remember { mutableIntStateOf(0) }
+
+    if (filterDialogVisible.value) {
+        EntriesDateRangeFilterDialog(
+            currentFilter = dateFilter,
+            onDismiss = { filterDialogVisible.value = false },
+            onApply = { filter ->
+                onApplyDateFilter(filter.from, filter.to)
+                filterDialogVisible.value = false
+            },
+            onClear = {
+                onClearDateFilter()
+                filterDialogVisible.value = false
+            },
+        )
+    }
+
     TopAppBar(
         title = {
             Text(
@@ -268,8 +317,59 @@ private fun EntriesTopBar(
                 modifier = Modifier.padding(end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                val searchHoverSource = remember { MutableInteractionSource() }
+                val searchHovered by searchHoverSource.collectIsHoveredAsState()
+                val filterHoverSource = remember { MutableInteractionSource() }
+                val filterHovered by filterHoverSource.collectIsHoveredAsState()
                 val moreHoverSource = remember { MutableInteractionSource() }
                 val moreHovered by moreHoverSource.collectIsHoveredAsState()
+
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = if (searchHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .hoverable(searchHoverSource)
+                        .clickable(interactionSource = searchHoverSource, indication = null) { }
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_search_24),
+                        contentDescription = "Поиск",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = when {
+                                dateFilter.isActive -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                                filterHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                else -> Color.Transparent
+                            },
+                            shape = CircleShape,
+                        )
+                        .hoverable(filterHoverSource)
+                        .clickable(interactionSource = filterHoverSource, indication = null) { filterDialogVisible.value = true }
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_date_range_24px),
+                        contentDescription = "Фильтр по датам",
+                        tint = if (dateFilter.isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+
                 Box(
                     modifier = Modifier
                         .size(52.dp)
@@ -374,6 +474,137 @@ private fun EntriesTopBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+private fun EntriesDateRangeFilterDialog(
+    currentFilter: EntriesDateRangeFilter,
+    onDismiss: () -> Unit,
+    onApply: (EntriesDateRangeFilter) -> Unit,
+    onClear: () -> Unit,
+) {
+    val pickerState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = currentFilter.from?.toDatePickerMillis(),
+        initialSelectedEndDateMillis = currentFilter.to?.toDatePickerMillis(),
+    )
+    val selectedFilter = EntriesDateRangeFilter(
+        from = pickerState.selectedStartDateMillis?.toDatePickerLocalDate(),
+        to = pickerState.selectedEndDateMillis?.toDatePickerLocalDate(),
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (currentFilter.isActive || selectedFilter.isActive) {
+                    TextButton(
+                        onClick = onClear,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                    ) {
+                        Text("Сбросить")
+                    }
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                ) {
+                    Text("Отмена")
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    onClick = { onApply(selectedFilter) },
+                    shape = RoundedCornerShape(18.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .widthIn(min = 140.dp),
+                ) {
+                    Text(
+                        text = "Применить",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+            }
+        },
+        dismissButton = {},
+    ) {
+        Column {
+            DateRangePicker(
+                state = pickerState,
+                modifier = Modifier.padding(horizontal = 8.dp),
+                title = {
+                    Text(
+                        text = "Фильтр по датам",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 12.dp),
+                    )
+                },
+                headline = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        FilterDateSummaryCard(
+                            label = "От",
+                            date = selectedFilter.from,
+                            modifier = Modifier.weight(1f),
+                        )
+                        FilterDateSummaryCard(
+                            label = "До",
+                            date = selectedFilter.to,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                },
+                showModeToggle = false,
+            )
+
+        }
+    }
+}
+
+@Composable
+private fun FilterDateSummaryCard(
+    label: String,
+    date: LocalDate?,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = date?.let(::formatDate) ?: "Не выбрано",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            color = if (date != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun EntriesContent(
     viewState: EntriesViewState,
     layoutType: LayoutType,
@@ -382,6 +613,7 @@ private fun EntriesContent(
     onDeleteEntry: (String) -> Unit,
     onEditEntry: (String) -> Unit,
     onExportEntry: (Entry) -> Unit,
+    onClearDateFilter: () -> Unit,
 ) {
     val listState = remember { LazyListState() }
 
@@ -402,7 +634,12 @@ private fun EntriesContent(
     ) {
         when (viewState) {
             EntriesViewState.Loading -> EntriesLoadingState(paddingValues = paddingValues)
-            EntriesViewState.Empty -> EntriesEmptyState(paddingValues = paddingValues)
+            is EntriesViewState.Empty -> EntriesEmptyState(
+                paddingValues = paddingValues,
+                isFiltered = viewState.isFiltered,
+                dateFilter = viewState.dateFilter,
+                onClearDateFilter = onClearDateFilter,
+            )
             is EntriesViewState.Content -> EntriesListCompact(
                 entries = viewState.entries,
                 maxWidth = maxWidth,
@@ -650,6 +887,46 @@ private fun EntryCard(
     }
 }
 
+private fun EntriesViewState.dateFilter(): EntriesDateRangeFilter = when (this) {
+    EntriesViewState.Loading -> EntriesDateRangeFilter()
+    is EntriesViewState.Empty -> dateFilter
+    is EntriesViewState.Content -> dateFilter
+}
+
+private fun EntriesDateRangeFilter.toDisplayText(): String = when {
+    from != null && to != null -> "${formatDate(from)} - ${formatDate(to)}"
+    from != null -> "От ${formatDate(from)}"
+    to != null -> "До ${formatDate(to)}"
+    else -> "Все даты"
+}
+
+private fun formatDateRangeHeadline(filter: EntriesDateRangeFilter): String =
+    if (filter.isActive) filter.toDisplayText() else "Выбери диапазон дат"
+
+private fun LocalDate.toDatePickerMillis(): Long =
+    atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+
+private fun Long.toDatePickerLocalDate(): LocalDate =
+    Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
+
+private fun formatDate(date: LocalDate): String {
+    val month = when (date.month) {
+        Month.JANUARY -> "января"
+        Month.FEBRUARY -> "февраля"
+        Month.MARCH -> "марта"
+        Month.APRIL -> "апреля"
+        Month.MAY -> "мая"
+        Month.JUNE -> "июня"
+        Month.JULY -> "июля"
+        Month.AUGUST -> "августа"
+        Month.SEPTEMBER -> "сентября"
+        Month.OCTOBER -> "октября"
+        Month.NOVEMBER -> "ноября"
+        Month.DECEMBER -> "декабря"
+    }
+    return "${date.day} $month ${date.year}"
+}
+
 private fun formatDate(date: Instant): String {
     val localDate = date.toLocalDateTime(TimeZone.currentSystemDefault()).date
     val month = when (localDate.month) {
@@ -719,7 +996,21 @@ private fun MenuItemContent(
 @Composable
 private fun EntriesEmptyState(
     paddingValues: PaddingValues,
+    isFiltered: Boolean,
+    dateFilter: EntriesDateRangeFilter,
+    onClearDateFilter: () -> Unit,
 ) {
+    val title = if (isFiltered) {
+        "Нет записей за выбранный период"
+    } else {
+        "Еще нет записей"
+    }
+    val description = if (isFiltered) {
+        null
+    } else {
+        "Сделай свою первую запись.\nНажми на кнопку плюс внизу."
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -735,20 +1026,28 @@ private fun EntriesEmptyState(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Еще нет записей",
+            text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = "Сделай свою первую запись.\nНажми на кнопку плюс внизу.",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Normal,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
+        description?.let {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+        if (isFiltered) {
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(onClick = onClearDateFilter) {
+                Text("Сбросить фильтр")
+            }
+        }
     }
 }
 
@@ -786,3 +1085,5 @@ private fun appBackgroundBrush(): Brush {
     }
     return Brush.verticalGradient(colors = colors)
 }
+
+
