@@ -1,4 +1,4 @@
-package com.kindaboii.journal.features.stats.impl.presentation
+﻿package com.kindaboii.journal.features.stats.impl.presentation
 
 import com.kindaboii.journal.features.entries.api.models.Entry
 import kotlinx.datetime.DatePeriod
@@ -11,8 +11,11 @@ internal object StatsCalculator {
 
     fun computeStats(
         entries: List<Entry>,
-        today: LocalDate,
+        streakAnchorDate: LocalDate,
+        moodStartDate: LocalDate,
+        moodEndDate: LocalDate,
         tz: TimeZone,
+        dateFilter: StatsDateRangeFilter,
     ): StatsViewState.Content {
         val totalEntries = entries.size
         val totalWords = entries.sumOf { entry ->
@@ -21,14 +24,17 @@ internal object StatsCalculator {
                 ?.count { it.isNotEmpty() }
                 ?: 0
         }
-        val currentStreak = computeStreak(entries, today, tz)
-        val moodPoints = computeMoodPoints(entries, today, tz)
+        val currentStreak = computeStreak(entries, streakAnchorDate, tz)
+        val moodPoints = computeMoodPoints(entries, moodStartDate, moodEndDate, tz)
 
         return StatsViewState.Content(
             totalEntries = totalEntries,
             totalWords = totalWords,
             currentStreak = currentStreak,
             moodPoints = moodPoints,
+            dateFilter = dateFilter,
+            chartStartDate = moodStartDate,
+            chartEndDate = moodEndDate,
         )
     }
 
@@ -47,7 +53,6 @@ internal object StatsCalculator {
             streak++
             current = current.minus(DatePeriod(days = 1))
         }
-        // If today has no entry, check if a streak ended yesterday
         if (streak == 0) {
             current = today.minus(DatePeriod(days = 1))
             while (current in entryDates) {
@@ -60,11 +65,11 @@ internal object StatsCalculator {
 
     fun computeMoodPoints(
         entries: List<Entry>,
-        today: LocalDate,
+        startDate: LocalDate,
+        endDate: LocalDate,
         tz: TimeZone,
-    ): List<MoodPoint> {
-        val thirtyDaysAgo = today.minus(DatePeriod(days = 29))
-        return entries
+    ): List<MoodPoint> =
+        entries
             .filter { it.mood != null }
             .map { entry ->
                 MoodPoint(
@@ -72,7 +77,6 @@ internal object StatsCalculator {
                     value = entry.mood!!.value,
                 )
             }
-            .filter { it.date >= thirtyDaysAgo && it.date <= today }
+            .filter { it.date >= startDate && it.date <= endDate }
             .sortedBy { it.date }
-    }
 }

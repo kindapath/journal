@@ -11,14 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,10 +30,14 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -48,13 +56,17 @@ import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.LocalJournalThemeController
 import com.kindaboii.journal.common.ui.withLayoutType
 import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import journal.features.stats.impl.generated.resources.Res
 import journal.features.stats.impl.generated.resources.icon_arrow_back_24
+import journal.features.stats.impl.generated.resources.icon_date_range_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
@@ -73,9 +85,19 @@ fun StatsScreen(
         withLayoutType { layoutType ->
             when (layoutType) {
                 LayoutType.Expanded -> ConstrainedContainer(maxWidth = 900.dp) {
-                    StatsScaffold(viewState = viewState, onBack = onBack)
+                    StatsScaffold(
+                        viewState = viewState,
+                        onBack = onBack,
+                        onApplyDateFilter = viewModel::onApplyDateFilter,
+                        onClearDateFilter = viewModel::onClearDateFilter,
+                    )
                 }
-                LayoutType.Compact -> StatsScaffold(viewState = viewState, onBack = onBack)
+                LayoutType.Compact -> StatsScaffold(
+                    viewState = viewState,
+                    onBack = onBack,
+                    onApplyDateFilter = viewModel::onApplyDateFilter,
+                    onClearDateFilter = viewModel::onClearDateFilter,
+                )
             }
         }
     }
@@ -86,7 +108,27 @@ fun StatsScreen(
 private fun StatsScaffold(
     viewState: StatsViewState,
     onBack: () -> Unit,
+    onApplyDateFilter: (LocalDate?, LocalDate?) -> Unit,
+    onClearDateFilter: () -> Unit,
 ) {
+    val dateFilter = viewState.dateFilter()
+    val filterDialogVisible = remember { mutableStateOf(false) }
+
+    if (filterDialogVisible.value) {
+        StatsDateRangeFilterDialog(
+            currentFilter = dateFilter,
+            onDismiss = { filterDialogVisible.value = false },
+            onApply = { filter ->
+                onApplyDateFilter(filter.from, filter.to)
+                filterDialogVisible.value = false
+            },
+            onClear = {
+                onClearDateFilter()
+                filterDialogVisible.value = false
+            },
+        )
+    }
+
     Scaffold(
         topBar = {
             LargeTopAppBar(
@@ -120,16 +162,131 @@ private fun StatsScaffold(
             }
             is StatsViewState.Content -> {
                 StatsContent(
-                    viewState = viewState as StatsViewState.Content,
+                    viewState = viewState,
                     paddingValues = paddingValues,
+                    onOpenDateFilter = { filterDialogVisible.value = true },
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun StatsContent(viewState: StatsViewState.Content, paddingValues: PaddingValues) {
+private fun StatsDateRangeFilterDialog(
+    currentFilter: StatsDateRangeFilter,
+    onDismiss: () -> Unit,
+    onApply: (StatsDateRangeFilter) -> Unit,
+    onClear: () -> Unit,
+) {
+    val pickerState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = currentFilter.from?.toDatePickerMillis(),
+        initialSelectedEndDateMillis = currentFilter.to?.toDatePickerMillis(),
+    )
+    val selectedFilter = StatsDateRangeFilter(
+        from = pickerState.selectedStartDateMillis?.toDatePickerLocalDate(),
+        to = pickerState.selectedEndDateMillis?.toDatePickerLocalDate(),
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (currentFilter.isActive || selectedFilter.isActive) {
+                    TextButton(onClick = onClear) {
+                        Text("Сбросить")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Отмена")
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = { onApply(selectedFilter) }) {
+                    Text("Применить")
+                }
+            }
+        },
+        dismissButton = {},
+    ) {
+        DateRangePicker(
+            state = pickerState,
+            title = {
+                Text(
+                    text = "Фильтр по датам",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 12.dp),
+                )
+            },
+            headline = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    StatsFilterDateSummaryCard(
+                        label = "От",
+                        date = selectedFilter.from,
+                        modifier = Modifier.weight(1f),
+                    )
+                    StatsFilterDateSummaryCard(
+                        label = "До",
+                        date = selectedFilter.to,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            },
+            showModeToggle = false,
+        )
+    }
+}
+
+@Composable
+private fun StatsFilterDateSummaryCard(
+    label: String,
+    date: LocalDate?,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(18.dp),
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = date?.let(::formatDate) ?: "Не выбрано",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            color = if (date != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun StatsContent(
+    viewState: StatsViewState.Content,
+    paddingValues: PaddingValues,
+    onOpenDateFilter: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -138,12 +295,25 @@ private fun StatsContent(viewState: StatsViewState.Content, paddingValues: Paddi
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        if (viewState.dateFilter.isActive) {
+            Text(
+                text = "Период: ${viewState.dateFilter.toDisplayText()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         SummaryCards(
             totalEntries = viewState.totalEntries,
             totalWords = viewState.totalWords,
             currentStreak = viewState.currentStreak,
         )
-        MoodChartCard(moodPoints = viewState.moodPoints)
+        MoodChartCard(
+            moodPoints = viewState.moodPoints,
+            startDate = viewState.chartStartDate,
+            endDate = viewState.chartEndDate,
+            dateFilter = viewState.dateFilter,
+            onOpenDateFilter = onOpenDateFilter,
+        )
     }
 }
 
@@ -214,7 +384,13 @@ private fun StatCard(
 }
 
 @Composable
-private fun MoodChartCard(moodPoints: List<MoodPoint>) {
+private fun MoodChartCard(
+    moodPoints: List<MoodPoint>,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    dateFilter: StatsDateRangeFilter,
+    onOpenDateFilter: () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -229,10 +405,16 @@ private fun MoodChartCard(moodPoints: List<MoodPoint>) {
                 .padding(20.dp),
         ) {
             Text(
-                text = "Настроение за 30 дней",
+                text = if (dateFilter.isActive) "Настроение за период" else "Настроение за 30 дней",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${formatDate(startDate)} - ${formatDate(endDate)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(16.dp))
             if (moodPoints.isEmpty()) {
@@ -249,17 +431,36 @@ private fun MoodChartCard(moodPoints: List<MoodPoint>) {
                     )
                 }
             } else {
-                val today = Clock.System.now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
-                val startDate = today.minus(DatePeriod(days = 29))
                 MoodLineChart(
                     points = moodPoints,
                     startDate = startDate,
-                    endDate = today,
+                    endDate = endDate,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp),
                 )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onOpenDateFilter,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_date_range_24px),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Text(
+                        text = "Выбрать период",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
             }
         }
     }
@@ -273,10 +474,8 @@ private fun MoodLineChart(
     modifier: Modifier = Modifier,
 ) {
     val gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-
     Canvas(modifier = modifier) {
-        val totalDays = 29f
+        val totalDays = daysBetween(startDate, endDate).coerceAtLeast(1).toFloat()
         val chartWidth = size.width
         val chartHeight = size.height - 20.dp.toPx() // bottom space for labels
 
@@ -372,6 +571,42 @@ private fun MoodLineChart(
             )
         }
     }
+}
+
+private fun StatsViewState.dateFilter(): StatsDateRangeFilter = when (this) {
+    StatsViewState.Loading -> StatsDateRangeFilter()
+    is StatsViewState.Content -> dateFilter
+}
+
+private fun StatsDateRangeFilter.toDisplayText(): String = when {
+    from != null && to != null -> "${formatDate(from)} - ${formatDate(to)}"
+    from != null -> "От ${formatDate(from)}"
+    to != null -> "До ${formatDate(to)}"
+    else -> "Все даты"
+}
+
+private fun LocalDate.toDatePickerMillis(): Long =
+    atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+
+private fun Long.toDatePickerLocalDate(): LocalDate =
+    Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
+
+private fun formatDate(date: LocalDate): String {
+    val month = when (date.month) {
+        Month.JANUARY -> "января"
+        Month.FEBRUARY -> "февраля"
+        Month.MARCH -> "марта"
+        Month.APRIL -> "апреля"
+        Month.MAY -> "мая"
+        Month.JUNE -> "июня"
+        Month.JULY -> "июля"
+        Month.AUGUST -> "августа"
+        Month.SEPTEMBER -> "сентября"
+        Month.OCTOBER -> "октября"
+        Month.NOVEMBER -> "ноября"
+        Month.DECEMBER -> "декабря"
+    }
+    return "${date.day} $month ${date.year}"
 }
 
 private fun daysBetween(start: LocalDate, end: LocalDate): Long =
