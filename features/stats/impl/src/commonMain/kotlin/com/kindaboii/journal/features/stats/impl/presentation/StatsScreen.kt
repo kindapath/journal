@@ -65,6 +65,7 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import journal.features.stats.impl.generated.resources.Res
 import journal.features.stats.impl.generated.resources.icon_arrow_back_24
@@ -421,7 +422,7 @@ private fun MoodChartCard(
                 .padding(20.dp),
         ) {
             Text(
-                text = if (dateFilter.isActive) "Настроение за период" else "Настроение за 30 дней",
+                text = if (dateFilter.isActive) "Эмоции за период" else "Эмоции за 30 дней",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -437,11 +438,11 @@ private fun MoodChartCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(160.dp),
+                        .height(220.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Нет данных о настроении",
+                        text = "Нет данных об эмоциях",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -451,9 +452,7 @@ private fun MoodChartCard(
                     points = moodPoints,
                     startDate = startDate,
                     endDate = endDate,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -494,103 +493,160 @@ private fun MoodLineChart(
     modifier: Modifier = Modifier,
 ) {
     val gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-    Canvas(modifier = modifier) {
-        val totalDays = daysBetween(startDate, endDate).coerceAtLeast(1).toFloat()
-        val chartWidth = size.width
-        val chartHeight = size.height - 20.dp.toPx() // bottom space for labels
+    val axisLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val chartHeight = 180.dp
+    val dateAxisLabels = buildChartDateAxisLabels(startDate, endDate)
 
-        // Draw horizontal grid lines (at 0%, 50%, 100% of mood)
-        listOf(0f, 0.5f, 1f).forEach { ratio ->
-            val y = chartHeight * (1f - ratio)
-            drawLine(
-                color = gridColor,
-                start = Offset(0f, y),
-                end = Offset(chartWidth, y),
-                strokeWidth = 1.dp.toPx(),
-            )
-        }
+    Column(modifier = modifier) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(chartHeight),
+        ) {
+            val totalDays = daysBetween(startDate, endDate).coerceAtLeast(1).toFloat()
+            val chartWidth = size.width
+            val canvasHeight = size.height
 
-        if (points.size < 2) {
-            // Draw single dot if only one point
-            points.firstOrNull()?.let { point ->
+            listOf(0f, 0.25f, 0.5f, 0.75f, 1f).forEach { ratio ->
+                val y = canvasHeight * (1f - ratio)
+                drawLine(
+                    color = gridColor,
+                    start = Offset(0f, y),
+                    end = Offset(chartWidth, y),
+                    strokeWidth = 1.dp.toPx(),
+                )
+            }
+
+            if (points.size < 2) {
+                points.firstOrNull()?.let { point ->
+                    val dayIndex = daysBetween(startDate, point.date).toFloat()
+                    val x = (dayIndex / totalDays) * chartWidth
+                    val y = canvasHeight * (1f - point.value / 100f)
+                    drawCircle(
+                        color = moodColor(point.value),
+                        radius = 7.dp.toPx(),
+                        center = Offset(x, y),
+                    )
+                }
+                return@Canvas
+            }
+
+            val path = Path()
+            var firstPoint = true
+            points.forEach { point ->
                 val dayIndex = daysBetween(startDate, point.date).toFloat()
                 val x = (dayIndex / totalDays) * chartWidth
-                val y = chartHeight * (1f - point.value / 100f)
+                val y = canvasHeight * (1f - point.value / 100f)
+                if (firstPoint) {
+                    path.moveTo(x, y)
+                    firstPoint = false
+                } else {
+                    path.lineTo(x, y)
+                }
+            }
+
+            drawPath(
+                path = path,
+                color = JournalColors.Primary.copy(alpha = 0.7f),
+                style = Stroke(
+                    width = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                ),
+            )
+
+            val fillPath = Path()
+            fillPath.addPath(path)
+            val lastPoint = points.last()
+            val lastDayIndex = daysBetween(startDate, lastPoint.date).toFloat()
+            val lastX = (lastDayIndex / totalDays) * chartWidth
+            fillPath.lineTo(lastX, canvasHeight)
+            val firstDayIndex = daysBetween(startDate, points.first().date).toFloat()
+            val firstX = (firstDayIndex / totalDays) * chartWidth
+            fillPath.lineTo(firstX, canvasHeight)
+            fillPath.close()
+            drawPath(
+                path = fillPath,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        JournalColors.Primary.copy(alpha = 0.18f),
+                        JournalColors.Primary.copy(alpha = 0f),
+                    ),
+                    startY = 0f,
+                    endY = canvasHeight,
+                ),
+            )
+
+            points.forEach { point ->
+                val dayIndex = daysBetween(startDate, point.date).toFloat()
+                val x = (dayIndex / totalDays) * chartWidth
+                val y = canvasHeight * (1f - point.value / 100f)
                 drawCircle(
                     color = moodColor(point.value),
-                    radius = 5.dp.toPx(),
+                    radius = 7.dp.toPx(),
                     center = Offset(x, y),
                 )
             }
-            return@Canvas
         }
 
-        // Build path
-        val path = Path()
-        var firstPoint = true
-        points.forEach { point ->
-            val dayIndex = daysBetween(startDate, point.date).toFloat()
-            val x = (dayIndex / totalDays) * chartWidth
-            val y = chartHeight * (1f - point.value / 100f)
-            if (firstPoint) {
-                path.moveTo(x, y)
-                firstPoint = false
-            } else {
-                path.lineTo(x, y)
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Draw the line
-        drawPath(
-            path = path,
-            color = JournalColors.Primary.copy(alpha = 0.7f),
-            style = Stroke(
-                width = 2.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
-
-        // Draw filled area under the line
-        val fillPath = Path()
-        fillPath.addPath(path)
-        val lastPoint = points.last()
-        val lastDayIndex = daysBetween(startDate, lastPoint.date).toFloat()
-        val lastX = (lastDayIndex / totalDays) * chartWidth
-        fillPath.lineTo(lastX, chartHeight)
-        val firstDayIndex = daysBetween(startDate, points.first().date).toFloat()
-        val firstX = (firstDayIndex / totalDays) * chartWidth
-        fillPath.lineTo(firstX, chartHeight)
-        fillPath.close()
-        drawPath(
-            path = fillPath,
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    JournalColors.Primary.copy(alpha = 0.18f),
-                    JournalColors.Primary.copy(alpha = 0f),
-                ),
-                startY = 0f,
-                endY = chartHeight,
-            ),
-        )
-
-        // Draw data points
-        points.forEach { point ->
-            val dayIndex = daysBetween(startDate, point.date).toFloat()
-            val x = (dayIndex / totalDays) * chartWidth
-            val y = chartHeight * (1f - point.value / 100f)
-            drawCircle(
-                color = moodColor(point.value),
-                radius = 5.dp.toPx(),
-                center = Offset(x, y),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = dateAxisLabels.start,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelSmall,
+                color = axisLabelColor,
+                textAlign = TextAlign.Start,
             )
-            drawCircle(
-                color = Color.White,
-                radius = 2.5f.dp.toPx(),
-                center = Offset(x, y),
+            Text(
+                text = dateAxisLabels.middle,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelSmall,
+                color = axisLabelColor,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = dateAxisLabels.end,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelSmall,
+                color = axisLabelColor,
+                textAlign = TextAlign.End,
             )
         }
     }
+}
+
+private data class ChartDateAxisLabels(
+    val start: String,
+    val middle: String,
+    val end: String,
+)
+
+private fun buildChartDateAxisLabels(startDate: LocalDate, endDate: LocalDate): ChartDateAxisLabels {
+    val totalDays = daysBetween(startDate, endDate)
+    if (totalDays <= 0) {
+        return ChartDateAxisLabels(
+            start = formatShortDate(startDate),
+            middle = "",
+            end = "",
+        )
+    }
+
+    val middleDate = startDate.plus(DatePeriod(days = (totalDays / 2).toInt()))
+    val middleLabel = if (totalDays < 4 || middleDate == startDate || middleDate == endDate) {
+        ""
+    } else {
+        formatShortDate(middleDate)
+    }
+
+    return ChartDateAxisLabels(
+        start = formatShortDate(startDate),
+        middle = middleLabel,
+        end = formatShortDate(endDate),
+    )
 }
 
 private fun StatsViewState.dateFilter(): StatsDateRangeFilter = when (this) {
@@ -627,6 +683,24 @@ private fun formatDate(date: LocalDate): String {
         Month.DECEMBER -> "декабря"
     }
     return "${date.day} $month ${date.year}"
+}
+
+private fun formatShortDate(date: LocalDate): String {
+    val month = when (date.month) {
+        Month.JANUARY -> "янв"
+        Month.FEBRUARY -> "фев"
+        Month.MARCH -> "мар"
+        Month.APRIL -> "апр"
+        Month.MAY -> "май"
+        Month.JUNE -> "июн"
+        Month.JULY -> "июл"
+        Month.AUGUST -> "авг"
+        Month.SEPTEMBER -> "сен"
+        Month.OCTOBER -> "окт"
+        Month.NOVEMBER -> "ноя"
+        Month.DECEMBER -> "дек"
+    }
+    return "${date.day} $month"
 }
 
 private fun daysBetween(start: LocalDate, end: LocalDate): Long =
