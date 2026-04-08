@@ -451,6 +451,7 @@ private fun EntriesTopBar(
                         modifier = Modifier.onSizeChanged { menuHeightPx.intValue = it.height },
                     ) {
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = if (themeController.isDarkTheme) Res.drawable.icon_light_mode_24 else Res.drawable.icon_dark_mode_24,
@@ -463,6 +464,7 @@ private fun EntriesTopBar(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_person_24px,
@@ -475,6 +477,7 @@ private fun EntriesTopBar(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_leaderboard_24px,
@@ -487,6 +490,7 @@ private fun EntriesTopBar(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_file_export_24px,
@@ -499,6 +503,7 @@ private fun EntriesTopBar(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_logout_24px,
@@ -653,6 +658,7 @@ private fun EntriesDateRangeFilterDialog(
                 if (currentFilter.isActive || selectedFilter.isActive) {
                     TextButton(
                         onClick = onClear,
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
                     ) {
                         Text("Сбросить")
@@ -660,6 +666,7 @@ private fun EntriesDateRangeFilterDialog(
                 }
                 TextButton(
                     onClick = onDismiss,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
                 ) {
                     Text("Отмена")
@@ -670,6 +677,7 @@ private fun EntriesDateRangeFilterDialog(
                     shape = RoundedCornerShape(18.dp),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                     modifier = Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
                         .height(40.dp)
                         .widthIn(min = 140.dp),
                 ) {
@@ -1002,6 +1010,7 @@ private fun EntryCard(
                         },
                     ) {
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_edit_note_24,
@@ -1014,6 +1023,7 @@ private fun EntryCard(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_export_24,
@@ -1026,6 +1036,7 @@ private fun EntryCard(
                             },
                         )
                         DropdownMenuItem(
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
                             text = {
                                 MenuItemContent(
                                     iconRes = Res.drawable.icon_delete_24,
@@ -1121,7 +1132,8 @@ private fun AddEntryFab(
         shape = CircleShape,
         modifier = Modifier
             .padding(8.dp)
-            .size(72.dp),
+            .size(72.dp)
+            .pointerHoverIcon(PointerIcon.Hand),
     ) {
         Icon(
             painter = painterResource(Res.drawable.icon_add_24),
@@ -1214,12 +1226,12 @@ private fun EntriesEmptyState(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (searchFilter.isActive) {
-                    TextButton(onClick = onClearSearch) {
+                    TextButton(onClick = onClearSearch, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
                         Text("Сбросить поиск")
                     }
                 }
                 if (dateFilter.isActive) {
-                    TextButton(onClick = onClearDateFilter) {
+                    TextButton(onClick = onClearDateFilter, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
                         Text("Сбросить фильтр")
                     }
                 }

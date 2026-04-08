@@ -41,6 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -92,6 +94,7 @@ fun StatsScreen(
                         onClearDateFilter = viewModel::onClearDateFilter,
                     )
                 }
+
                 LayoutType.Compact -> StatsScaffold(
                     viewState = viewState,
                     onBack = onBack,
@@ -134,7 +137,10 @@ private fun StatsScaffold(
             LargeTopAppBar(
                 title = { Text("Статистика") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.icon_arrow_back_24),
                             contentDescription = "Назад",
@@ -160,6 +166,7 @@ private fun StatsScaffold(
                     CircularProgressIndicator()
                 }
             }
+
             is StatsViewState.Content -> {
                 StatsContent(
                     viewState = viewState,
@@ -199,15 +206,24 @@ private fun StatsDateRangeFilterDialog(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (currentFilter.isActive || selectedFilter.isActive) {
-                    TextButton(onClick = onClear) {
+                    TextButton(
+                        onClick = onClear,
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                    ) {
                         Text("Сбросить")
                     }
                 }
-                TextButton(onClick = onDismiss) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Text("Отмена")
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                TextButton(onClick = { onApply(selectedFilter) }) {
+                TextButton(
+                    onClick = { onApply(selectedFilter) },
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Text("Применить")
                 }
             }
@@ -443,7 +459,9 @@ private fun MoodChartCard(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = onOpenDateFilter,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
             ) {
                 Row(
@@ -453,7 +471,9 @@ private fun MoodChartCard(
                     Icon(
                         painter = painterResource(Res.drawable.icon_date_range_24px),
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            .size(18.dp),
                     )
                     Text(
                         text = "Выбрать период",

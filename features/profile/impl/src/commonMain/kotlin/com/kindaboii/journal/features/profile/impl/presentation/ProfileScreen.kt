@@ -29,6 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -76,7 +78,10 @@ private fun ProfileScaffold(
             LargeTopAppBar(
                 title = { Text("Профиль") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.icon_arrow_back_24),
                             contentDescription = "Назад",
@@ -163,7 +168,9 @@ private fun ProfileContent(
                 Button(
                     onClick = viewModel::submitEmailChange,
                     enabled = !viewState.isUpdatingEmail && !viewState.isConfirmingEmail,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand),
                 ) {
                     Text("Отправить код")
                 }
@@ -187,7 +194,9 @@ private fun ProfileContent(
                     Button(
                         onClick = viewModel::confirmEmailChange,
                         enabled = !viewState.isConfirmingEmail && !viewState.isUpdatingEmail,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerHoverIcon(PointerIcon.Hand),
                     ) {
                         Text("Подтвердить email")
                     }
@@ -234,7 +243,9 @@ private fun ProfileContent(
                 Button(
                     onClick = viewModel::submitPasswordChange,
                     enabled = !viewState.isUpdatingPassword,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand),
                 ) {
                     Text("Изменить пароль")
                 }

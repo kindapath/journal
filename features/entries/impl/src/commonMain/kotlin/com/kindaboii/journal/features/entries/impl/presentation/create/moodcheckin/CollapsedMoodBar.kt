@@ -10,9 +10,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.features.entries.api.models.Mood
 import journal.features.entries.impl.generated.resources.Res
@@ -34,7 +34,8 @@ fun CollapsedMoodBar(
             .clip(CircleShape)
             .background(color = MaterialTheme.colorScheme.primary, shape = CircleShape)
             .clickable(onClick = onClick)
-            .pointerHoverIcon(PointerIcon.Hand),
+            .pointerHoverIcon(PointerIcon.Hand)
+            ,
         contentAlignment = Alignment.Center,
     ) {
         Icon(

@@ -35,8 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodIndicator
@@ -103,7 +101,7 @@ internal fun MoodOptionsStepLayout(
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.12f), CircleShape)
                     .clickable { infoVisible = !infoVisible }
-                    .pointerHoverIcon(PointerIcon.Hand),
+                    ,
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

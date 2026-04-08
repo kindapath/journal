@@ -36,8 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.features.entries.api.models.Mood
@@ -291,7 +289,7 @@ private fun NavButton(
             .background(Color.White.copy(alpha = 0.08f), CircleShape)
             .border(1.dp, borderColor, CircleShape)
             .clickable(onClick = onClick)
-            .pointerHoverIcon(PointerIcon.Hand),
+            ,
         contentAlignment = Alignment.Center,
     ) {
         Icon(

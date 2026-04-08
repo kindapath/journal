@@ -32,9 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
@@ -189,7 +189,8 @@ private fun CreateEntryTopBar(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
                     .clickable { onBack() }
-                    .pointerHoverIcon(PointerIcon.Hand),
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    ,
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -208,7 +209,8 @@ private fun CreateEntryTopBar(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .clickable { onDone() }
-                    .pointerHoverIcon(PointerIcon.Hand),
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    ,
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -265,7 +267,9 @@ private fun CreateEntryContent(
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
                             shape = CircleShape,
                         )
-                        .clickable { onMoodClear() },
+                        .clickable { onMoodClear() }
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        ,
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(

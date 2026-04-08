@@ -25,6 +25,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -217,7 +219,10 @@ private fun AuthCard(
                     Button(
                         onClick = onConfirmSignUp,
                         enabled = !isBusy,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            ,
                     ) {
                         Text("Подтвердить")
                     }
@@ -225,7 +230,10 @@ private fun AuthCard(
                     TextButton(
                         onClick = onResendSignUpCode,
                         enabled = !isBusy,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            ,
                     ) {
                         Text("Отправить снова")
                     }
@@ -234,7 +242,10 @@ private fun AuthCard(
                 Button(
                     onClick = onSubmit,
                     enabled = !isBusy,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        ,
                 ) {
                     Text(
                         text = if (uiState.mode == AuthMode.SignIn) "Войти" else "Зарегистрироваться",
@@ -295,7 +306,7 @@ private fun AuthModeButton(
     if (selected) {
         Button(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         ) {
             Text(
@@ -310,7 +321,7 @@ private fun AuthModeButton(
 
     TextButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
     ) {
         Text(text)
     }

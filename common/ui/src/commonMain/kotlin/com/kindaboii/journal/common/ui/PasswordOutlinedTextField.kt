@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import journal.common.ui.generated.resources.Res
@@ -38,7 +40,10 @@ fun PasswordOutlinedTextField(
             PasswordVisualTransformation()
         },
         trailingIcon = {
-            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+            IconButton(
+                onClick = { isPasswordVisible = !isPasswordVisible },
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+            ) {
                 Icon(
                     painter = painterResource(
                         if (isPasswordVisible) {

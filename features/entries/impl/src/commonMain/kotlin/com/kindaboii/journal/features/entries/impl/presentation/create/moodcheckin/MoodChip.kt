@@ -13,8 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -43,7 +41,7 @@ fun MoodChip(
                 indication = null,
                 onClick = onClick,
             )
-            .pointerHoverIcon(PointerIcon.Hand)
+            
             .padding(horizontal = 14.dp, vertical = 8.dp),
     )
 }
