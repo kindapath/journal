@@ -13,7 +13,7 @@ fun createSupabaseClient(): SupabaseClient =
         supabaseKey = ApiConfig.SUPABASE_CLIENT_API_KEY,
     ) {
 
-        defaultLogLevel = LogLevel.INFO
+        defaultLogLevel = LogLevel.NONE
         install(Auth)
         install(Postgrest) {
             defaultSchema = ApiConfig.SUPABASE_SCHEMA
