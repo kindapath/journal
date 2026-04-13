@@ -111,5 +111,9 @@ If you face any issues, please report them on [YouTrack](https://youtrack.jetbra
 
 # Или конкретный формат:
 ./gradlew :desktopApp:packageDmg   # macOS
-./gradlew :desktopApp:packageMsi   # Windows
+./gradlew :desktopApp:packageMsi   # Windows 
 ./gradlew :desktopApp:packageDeb   # Linux
+
+.\gradlew.bat :desktopApp:createDistributable
+
+
