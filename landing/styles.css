@@ -1,0 +1,271 @@
+﻿:root {
+    --color-text: #1f1630;
+    --color-muted: #6b6470;
+    --color-outline: rgba(184, 177, 188, 0.72);
+    --color-surface: rgba(255, 255, 255, 0.9);
+    --color-surface-soft: rgba(250, 243, 243, 0.82);
+    --color-web: #5e5ce7;
+    --color-web-strong: #5755d7;
+    --color-android: #9edb8b;
+    --color-android-strong: #6ea85d;
+    --color-windows: #6fa9ff;
+    --color-windows-strong: #4e82d3;
+    --color-button-text: #ffffff;
+    --shadow-page: 0 30px 80px rgba(94, 92, 231, 0.14);
+    --shadow-card: 0 14px 40px rgba(87, 85, 215, 0.14);
+    --radius-page: 34px;
+    --radius-card: 30px;
+    --radius-button: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background:
+        radial-gradient(circle at top left, rgba(94, 92, 231, 0.16), transparent 30%),
+        radial-gradient(circle at top right, rgba(111, 169, 255, 0.16), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(158, 219, 139, 0.16), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbf8fc 50%, #f4eff5 100%);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    border-radius: 999px;
+    pointer-events: none;
+    filter: blur(10px);
+}
+
+body::before {
+    top: -120px;
+    right: -110px;
+    width: 420px;
+    height: 420px;
+    background: rgba(94, 92, 231, 0.10);
+}
+
+body::after {
+    bottom: 50px;
+    left: -80px;
+    width: 320px;
+    height: 320px;
+    background: rgba(111, 169, 255, 0.12);
+}
+
+.page-shell {
+    position: relative;
+    z-index: 1;
+    width: min(1120px, calc(100% - 32px));
+    margin: 24px auto;
+    padding: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.86);
+    border-radius: var(--radius-page);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.8));
+    box-shadow: var(--shadow-page);
+    backdrop-filter: blur(18px);
+}
+
+.hero {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 34px;
+}
+
+.hero__eyebrow {
+    width: fit-content;
+    padding: 8px 14px;
+    border: 1px solid var(--color-outline);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--color-muted);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.hero__title {
+    margin: 0;
+    max-width: 760px;
+    font-size: clamp(40px, 7vw, 76px);
+    line-height: 0.94;
+    letter-spacing: -0.05em;
+}
+
+.hero__subtitle {
+    margin: 0;
+    max-width: 760px;
+    color: var(--color-muted);
+    font-size: clamp(18px, 2.5vw, 25px);
+    line-height: 1.6;
+}
+
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+
+.link-card {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    height: 100%;
+    min-height: 244px;
+    padding: 24px;
+    border: 1px solid var(--color-outline);
+    border-radius: var(--radius-card);
+    background: linear-gradient(180deg, var(--color-surface), var(--color-surface-soft));
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.link-card::after {
+    content: "";
+    position: absolute;
+    right: -50px;
+    bottom: -70px;
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    opacity: 0.14;
+}
+
+.link-card--web::after {
+    background: var(--color-web);
+}
+
+.link-card--apk::after {
+    background: var(--color-android);
+}
+
+.link-card--msi::after {
+    background: var(--color-windows);
+}
+
+.link-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.link-card__badge {
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.link-card--web .link-card__badge {
+    background: rgba(94, 92, 231, 0.12);
+    color: var(--color-web);
+}
+
+.link-card--apk .link-card__badge {
+    background: rgba(158, 219, 139, 0.22);
+    color: var(--color-android-strong);
+}
+
+.link-card--msi .link-card__badge {
+    background: rgba(111, 169, 255, 0.18);
+    color: var(--color-windows-strong);
+}
+
+.link-card h2 {
+    margin: 2px 0 0;
+    font-size: 28px;
+    line-height: 1.08;
+}
+
+.link-card p {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.6;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    margin-top: auto;
+    padding: 14px 18px;
+    border-radius: var(--radius-button);
+    color: var(--color-button-text);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.link-card--web .cta-button {
+    background: linear-gradient(135deg, var(--color-web), var(--color-web-strong));
+    box-shadow: 0 16px 32px rgba(94, 92, 231, 0.28);
+}
+
+.link-card--apk .cta-button {
+    background: linear-gradient(135deg, var(--color-android), var(--color-android-strong));
+    box-shadow: 0 16px 32px rgba(158, 219, 139, 0.30);
+}
+
+.link-card--msi .cta-button {
+    background: linear-gradient(135deg, var(--color-windows), var(--color-windows-strong));
+    box-shadow: 0 16px 32px rgba(111, 169, 255, 0.28);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 960px) {
+    .page-shell {
+        padding: 28px;
+    }
+
+    .links-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .link-card {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-shell {
+        width: min(100% - 20px, 100%);
+        margin: 10px auto;
+        padding: 22px;
+        border-radius: 28px;
+    }
+
+    .hero {
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .hero__title {
+        font-size: 42px;
+    }
+
+    .link-card {
+        padding: 20px;
+    }
+}
