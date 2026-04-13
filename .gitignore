@@ -28,3 +28,6 @@ node_modules/
 
 server/bin/
 desktopApp/bin/
+androidApp/signing/
+*.jks
+*.keystore
