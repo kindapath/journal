@@ -253,8 +253,9 @@ img {
 
 .section-heading {
     display: grid;
-    gap: 10px;
+    gap: 12px;
     max-width: 760px;
+    padding-inline: 2px;
 }
 
 .section-heading--compact {
@@ -371,13 +372,13 @@ img {
     }
 
     .hero {
-        gap: 28px;
+        gap: 32px;
         padding: 28px;
         margin-bottom: 64px;
     }
 
     .hero__top {
-        gap: 18px;
+        gap: 20px;
     }
 
     .hero__heading-row {
@@ -404,13 +405,13 @@ img {
 
     .hero h1 {
         max-width: none;
-        font-size: 2.85rem;
-        line-height: 0.98;
+        font-size: 2.7rem;
+        line-height: 1.02;
     }
 
     .hero__text {
         max-width: none;
-        font-size: 0.98rem;
+        font-size: 0.96rem;
     }
 
     .hero__downloads {
@@ -436,12 +437,18 @@ img {
     }
 
     .showcase {
-        margin-bottom: 64px;
-        gap: 24px;
+        margin-bottom: 68px;
+        gap: 22px;
+    }
+
+    .section-heading {
+        gap: 10px;
+        padding-inline: 8px;
     }
 
     .section-heading h2 {
-        font-size: 2.2rem;
+        font-size: 1.82rem;
+        line-height: 1.12;
     }
 
     .shot-grid,
@@ -500,7 +507,7 @@ img {
     }
 
     .hero h1 {
-        font-size: 2.3rem;
+        font-size: 2.18rem;
     }
 
     .hero__heading-row {
@@ -525,6 +532,14 @@ img {
     .shot-grid--two,
     .shot-grid--three {
         gap: 10px;
+    }
+
+    .section-heading {
+        padding-inline: 6px;
+    }
+
+    .section-heading h2 {
+        font-size: 1.62rem;
     }
 
     .shot-item img {
