@@ -180,16 +180,41 @@ img {
 }
 
 .button {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 56px;
+    min-height: 58px;
     padding: 0 22px;
     border-radius: var(--radius-pill);
     font-size: 0.98rem;
     font-weight: 700;
     text-decoration: none;
-    transition: transform var(--motion), box-shadow var(--motion), background-color var(--motion);
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform var(--motion), box-shadow var(--motion), filter var(--motion), background-color var(--motion);
+}
+
+.button::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02));
+    opacity: 0.45;
+    z-index: -1;
+}
+
+.button::after {
+    content: "";
+    position: absolute;
+    inset: auto 20% -55% 20%;
+    height: 70%;
+    border-radius: 50%;
+    filter: blur(16px);
+    opacity: 0.55;
+    z-index: -2;
+    transition: opacity var(--motion), transform var(--motion);
 }
 
 .access-card .button {
@@ -198,23 +223,44 @@ img {
 
 .button:hover,
 .button:focus-visible {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    filter: saturate(1.05);
+}
+
+.button:hover::after,
+.button:focus-visible::after {
+    opacity: 0.82;
+    transform: translateY(-2px);
 }
 
 .button--web {
-    background: linear-gradient(135deg, #6e6cff, #5755d7);
+    background: linear-gradient(135deg, #7b78ff, #5755d7);
     color: #ffffff;
-    box-shadow: 0 12px 24px rgba(94, 92, 231, 0.2);
+    box-shadow: 0 12px 24px rgba(94, 92, 231, 0.22);
+}
+
+.button--web::after {
+    background: rgba(123, 120, 255, 0.55);
 }
 
 .button--android {
-    background: linear-gradient(135deg, #93cf81, #6fa85f);
-    color: #13200f;
+    background: linear-gradient(135deg, #9fda8d, #6fa85f);
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(111, 168, 95, 0.2);
+}
+
+.button--android::after {
+    background: rgba(159, 218, 141, 0.48);
 }
 
 .button--windows {
-    background: linear-gradient(135deg, #79b1ff, #558ade);
+    background: linear-gradient(135deg, #86b7ff, #558ade);
     color: #ffffff;
+    box-shadow: 0 12px 24px rgba(85, 138, 222, 0.22);
+}
+
+.button--windows::after {
+    background: rgba(134, 183, 255, 0.5);
 }
 
 .hero__visual {
@@ -560,7 +606,8 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .button {
+    .button,
+    .button::after {
         transition: none;
     }
 }
