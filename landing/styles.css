@@ -368,6 +368,72 @@ img {
     letter-spacing: -0.03em;
 }
 
+.download-cta {
+    display: flex;
+    justify-content: stretch;
+    margin: 0 0 68px;
+    padding: 0 2px;
+}
+
+.download-cta__button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 72px;
+    padding: 0 28px;
+    border: 1px solid rgba(189, 187, 255, 0.18);
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, #7b78ff, #5a57de);
+    box-shadow: 0 18px 42px rgba(94, 92, 231, 0.22);
+    color: #ffffff;
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform var(--motion), box-shadow var(--motion), filter var(--motion);
+}
+
+.download-cta__button::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.04));
+    opacity: 0.48;
+    z-index: -1;
+}
+
+.download-cta__button::after {
+    content: "";
+    position: absolute;
+    inset: auto 18% -58% 18%;
+    height: 74%;
+    border-radius: 50%;
+    background: rgba(127, 124, 255, 0.62);
+    filter: blur(22px);
+    opacity: 0.72;
+    z-index: -2;
+    transition: opacity var(--motion), transform var(--motion);
+}
+
+.download-cta__button:hover,
+.download-cta__button:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 48px rgba(94, 92, 231, 0.28);
+    filter: saturate(1.04);
+}
+
+.download-cta__button:hover::after,
+.download-cta__button:focus-visible::after {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
 .footer {
     padding: 0 24px 28px;
 }
@@ -572,6 +638,15 @@ img {
         padding: 0 10px 20px;
     }
 
+    .download-cta {
+        margin-bottom: 52px;
+    }
+
+    .download-cta__button {
+        min-height: 62px;
+        font-size: 1rem;
+    }
+
     .footer__inner {
         width: min(var(--page-max-width), calc(100% - 10px));
         flex-direction: column;
@@ -644,7 +719,9 @@ img {
 
 @media (prefers-reduced-motion: reduce) {
     .button,
-    .button::after {
+    .button::after,
+    .download-cta__button,
+    .download-cta__button::after {
         transition: none;
     }
 }
