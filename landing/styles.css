@@ -61,7 +61,7 @@ img {
 .hero {
     display: grid;
     gap: 34px;
-    padding: 48px;
+    padding: 36px 48px 48px;
     margin-bottom: 92px;
 }
 
@@ -84,6 +84,15 @@ img {
 .hero__heading-copy {
     display: grid;
     gap: 12px;
+}
+
+.hero__meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .hero__kicker,
@@ -477,6 +486,7 @@ img {
     border-radius: var(--radius-pill);
     background: rgba(255, 255, 255, 0.04);
     color: #e8e3ff;
+    text-decoration: none;
     transition: transform var(--motion), background-color var(--motion), border-color var(--motion), box-shadow var(--motion);
 }
 .footer__github img {
@@ -492,6 +502,25 @@ img {
     background: rgba(127, 124, 255, 0.12);
     border-color: rgba(189, 187, 255, 0.28);
     box-shadow: 0 10px 24px rgba(94, 92, 231, 0.14);
+}
+
+.hero__github {
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-color: rgba(189, 187, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(232, 227, 255, 0.82);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    box-shadow: none;
+}
+
+.hero__github img {
+    width: 15px;
+    height: 15px;
+    opacity: 0.82;
 }
 
 @media (max-width: 1120px) {
@@ -518,12 +547,22 @@ img {
 
     .hero {
         gap: 32px;
-        padding: 28px;
+        padding: 22px 28px 28px;
         margin-bottom: 64px;
     }
 
     .hero__top {
         gap: 20px;
+    }
+
+    .hero__meta {
+        gap: 8px;
+    }
+
+    .hero__github {
+        min-height: 30px;
+        padding: 0 9px;
+        font-size: 0.78rem;
     }
 
     .hero__heading-row {
@@ -661,7 +700,7 @@ img {
 
 @media (max-width: 400px) {
     .hero {
-        padding: 22px;
+        padding: 18px 22px 22px;
     }
 
     .hero h1 {
