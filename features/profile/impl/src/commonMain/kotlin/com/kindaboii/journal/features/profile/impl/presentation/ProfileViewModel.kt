@@ -15,6 +15,7 @@ class ProfileViewModel(
     private val _viewState = MutableStateFlow(
         ProfileViewState(
             currentEmail = authService.currentUserEmail().orEmpty(),
+            isDemoMode = authService.currentUserEmail().isNullOrBlank(),
         )
     )
     val viewState: StateFlow<ProfileViewState> = _viewState.asStateFlow()
@@ -55,7 +56,18 @@ class ProfileViewModel(
         }
     }
 
+    fun continueWithRealAccount() {
+        viewModelScope.launch {
+            authService.signOut()
+        }
+    }
+
     fun submitEmailChange() {
+        if (_viewState.value.isDemoMode) {
+            continueWithRealAccount()
+            return
+        }
+
         val requestedEmail = _viewState.value.email.trim()
         val currentEmail = _viewState.value.currentEmail.trim()
 
@@ -101,6 +113,11 @@ class ProfileViewModel(
     }
 
     fun confirmEmailChange() {
+        if (_viewState.value.isDemoMode) {
+            continueWithRealAccount()
+            return
+        }
+
         val pendingEmail = _viewState.value.pendingEmail.trim()
         val code = _viewState.value.emailCode.trim()
 
@@ -130,6 +147,7 @@ class ProfileViewModel(
                     it.copy(
                         isConfirmingEmail = false,
                         currentEmail = actualEmail,
+                        isDemoMode = actualEmail.isBlank(),
                         pendingEmail = "",
                         emailCode = "",
                         emailMessage = "Email подтвержден и обновлен.",
@@ -147,6 +165,11 @@ class ProfileViewModel(
     }
 
     fun submitPasswordChange() {
+        if (_viewState.value.isDemoMode) {
+            continueWithRealAccount()
+            return
+        }
+
         val password = _viewState.value.newPassword
         val confirmPassword = _viewState.value.confirmPassword
 

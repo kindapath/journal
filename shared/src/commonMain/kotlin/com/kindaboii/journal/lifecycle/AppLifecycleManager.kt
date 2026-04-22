@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 class AppLifecycleManager(
     private val syncManager: SyncManager,
     private val authService: AuthService,
+    private val demoSessionManager: DemoSessionManager,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var authObserverJob: Job? = null
@@ -41,6 +42,8 @@ class AppLifecycleManager(
                             syncManager.startSync()
                             currentSyncUserId = authState.userId
                         }
+
+                        demoSessionManager.ensureDemoData(authState.userId)
                     }
 
                     AuthState.Loading,

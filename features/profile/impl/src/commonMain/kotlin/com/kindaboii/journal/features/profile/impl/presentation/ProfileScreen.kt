@@ -112,6 +112,9 @@ private fun ProfileContent(
     viewModel: ProfileViewModel,
     paddingValues: PaddingValues,
 ) {
+    val emailInputsEnabled = !viewState.isDemoMode && !viewState.isUpdatingEmail && !viewState.isConfirmingEmail
+    val passwordInputsEnabled = !viewState.isDemoMode && !viewState.isUpdatingPassword
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,27 +144,37 @@ private fun ProfileContent(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
+                if (viewState.isDemoMode) {
+                    Text(
+                        text = "Сейчас вы в demo-режиме. Разделы email и пароля оставлены видимыми для демонстрации, но для реального изменения нужно войти или зарегистрироваться в обычный аккаунт.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
                 Text(
                     text = "Изменить email",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                OutlinedTextField(
-                    value = viewState.currentEmail,
-                    onValueChange = {},
-                    label = { Text("Текущий email") },
-                    singleLine = true,
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                if (viewState.currentEmail.isNotBlank()) {
+                    OutlinedTextField(
+                        value = viewState.currentEmail,
+                        onValueChange = {},
+                        label = { Text("Текущий email") },
+                        singleLine = true,
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
 
                 OutlinedTextField(
                     value = viewState.email,
                     onValueChange = viewModel::onEmailChange,
                     label = { Text("Новый email") },
                     singleLine = true,
-                    enabled = !viewState.isUpdatingEmail && !viewState.isConfirmingEmail,
+                    enabled = emailInputsEnabled,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -172,10 +185,16 @@ private fun ProfileContent(
                         .fillMaxWidth()
                         .pointerHoverIcon(PointerIcon.Hand),
                 ) {
-                    Text("Отправить код")
+                    Text(
+                        text = if (viewState.isDemoMode) {
+                            "Войти или зарегистрироваться"
+                        } else {
+                            "Отправить код"
+                        }
+                    )
                 }
 
-                if (viewState.pendingEmail.isNotBlank()) {
+                if (!viewState.isDemoMode && viewState.pendingEmail.isNotBlank()) {
                     Text(
                         text = "Подтверждение ожидается для ${viewState.pendingEmail}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -220,7 +239,7 @@ private fun ProfileContent(
                     value = viewState.newPassword,
                     onValueChange = viewModel::onNewPasswordChange,
                     label = "Новый пароль",
-                    enabled = !viewState.isUpdatingPassword,
+                    enabled = passwordInputsEnabled,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -228,7 +247,7 @@ private fun ProfileContent(
                     value = viewState.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChange,
                     label = "Подтвердите пароль",
-                    enabled = !viewState.isUpdatingPassword,
+                    enabled = passwordInputsEnabled,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -247,7 +266,13 @@ private fun ProfileContent(
                         .fillMaxWidth()
                         .pointerHoverIcon(PointerIcon.Hand),
                 ) {
-                    Text("Изменить пароль")
+                    Text(
+                        text = if (viewState.isDemoMode) {
+                            "Войти или зарегистрироваться"
+                        } else {
+                            "Изменить пароль"
+                        }
+                    )
                 }
             }
         }
@@ -262,4 +287,3 @@ private fun profileBackgroundBrush(): Brush =
             MaterialTheme.colorScheme.surfaceVariant,
         ),
     )
-
