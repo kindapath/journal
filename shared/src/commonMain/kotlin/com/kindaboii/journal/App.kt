@@ -8,12 +8,19 @@ import com.kindaboii.journal.common.ui.LocalJournalThemeController
 import com.kindaboii.journal.common.ui.rememberJournalThemeController
 import com.kindaboii.journal.navigation.AppNavigation
 import com.kindaboii.journal.theme.JournalTheme
+import com.kindaboii.journal.theme.ThemePreferenceStorage
+import org.koin.compose.koinInject
 
 @Composable
 @Preview
 fun App() {
     val systemIsDarkTheme = isSystemInDarkTheme()
-    val themeController = rememberJournalThemeController(initialIsDarkTheme = systemIsDarkTheme)
+    val themePreferenceStorage: ThemePreferenceStorage = koinInject()
+    val initialIsDarkTheme = themePreferenceStorage.getSavedIsDarkTheme() ?: systemIsDarkTheme
+    val themeController = rememberJournalThemeController(
+        initialIsDarkTheme = initialIsDarkTheme,
+        onThemeChanged = themePreferenceStorage::saveIsDarkTheme,
+    )
 
     CompositionLocalProvider(LocalJournalThemeController provides themeController) {
         JournalTheme(darkTheme = themeController.isDarkTheme) {

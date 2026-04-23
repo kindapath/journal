@@ -75,6 +75,8 @@ kotlin {
 
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.cryptography.core)
+            implementation(libs.cryptography.provider.optimal)
 
             implementation(libs.coroutines.extensions)
 

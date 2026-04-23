@@ -90,6 +90,7 @@ import com.kindaboii.journal.common.ui.fadingEdges
 import com.kindaboii.journal.common.ui.withLayoutType
 import com.kindaboii.journal.features.entries.api.models.Entry
 import com.kindaboii.journal.features.entries.impl.presentation.components.MoodHeaderBar
+import com.kindaboii.journal.network.ApiConfig
 import journal.features.entries.impl.generated.resources.Res
 import journal.features.entries.impl.generated.resources.icon_add_24
 import journal.features.entries.impl.generated.resources.icon_arrow_drop_up_24px
@@ -127,6 +128,7 @@ fun EntriesScreen(
 ) {
     val viewModel: EntriesViewModel = koinInject()
     val viewState by viewModel.viewState.collectAsState()
+    val isGeneratingDemoData by viewModel.isGeneratingDemoData.collectAsState()
 
     Box(
         modifier = Modifier
@@ -149,6 +151,9 @@ fun EntriesScreen(
                     onClearDateFilter = viewModel::onClearDateFilter,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onClearSearch = viewModel::onClearSearch,
+                    showDebugActions = ApiConfig.DEBUG,
+                    isGeneratingDemoData = isGeneratingDemoData,
+                    onGenerateDemoData = viewModel::onGenerateDemoData,
                 )
 
                 LayoutType.Compact -> EntriesCompactScreen(
@@ -165,6 +170,9 @@ fun EntriesScreen(
                     onClearDateFilter = viewModel::onClearDateFilter,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onClearSearch = viewModel::onClearSearch,
+                    showDebugActions = ApiConfig.DEBUG,
+                    isGeneratingDemoData = isGeneratingDemoData,
+                    onGenerateDemoData = viewModel::onGenerateDemoData,
                 )
             }
         }
@@ -186,6 +194,9 @@ private fun EntriesExpandedScreen(
     onClearDateFilter: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
+    showDebugActions: Boolean,
+    isGeneratingDemoData: Boolean,
+    onGenerateDemoData: () -> Unit,
 ) {
     ConstrainedContainer(maxWidth = 900.dp) {
         EntriesScaffold(
@@ -203,6 +214,9 @@ private fun EntriesExpandedScreen(
             onClearDateFilter = onClearDateFilter,
             onSearchQueryChange = onSearchQueryChange,
             onClearSearch = onClearSearch,
+            showDebugActions = showDebugActions,
+            isGeneratingDemoData = isGeneratingDemoData,
+            onGenerateDemoData = onGenerateDemoData,
         )
     }
 }
@@ -222,6 +236,9 @@ private fun EntriesCompactScreen(
     onClearDateFilter: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
+    showDebugActions: Boolean,
+    isGeneratingDemoData: Boolean,
+    onGenerateDemoData: () -> Unit,
 ) {
     EntriesScaffold(
         viewState = viewState,
@@ -238,6 +255,9 @@ private fun EntriesCompactScreen(
         onClearDateFilter = onClearDateFilter,
         onSearchQueryChange = onSearchQueryChange,
         onClearSearch = onClearSearch,
+        showDebugActions = showDebugActions,
+        isGeneratingDemoData = isGeneratingDemoData,
+        onGenerateDemoData = onGenerateDemoData,
     )
 }
 
@@ -258,6 +278,9 @@ private fun EntriesScaffold(
     onClearDateFilter: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
+    showDebugActions: Boolean,
+    isGeneratingDemoData: Boolean,
+    onGenerateDemoData: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
@@ -278,6 +301,9 @@ private fun EntriesScaffold(
                 onClearDateFilter = onClearDateFilter,
                 onSearchQueryChange = onSearchQueryChange,
                 onClearSearch = onClearSearch,
+                showDebugActions = showDebugActions,
+                isGeneratingDemoData = isGeneratingDemoData,
+                onGenerateDemoData = onGenerateDemoData,
             )
         },
         floatingActionButton = { AddEntryFab(onAddEntry) },
@@ -311,6 +337,9 @@ private fun EntriesTopBar(
     onClearDateFilter: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onClearSearch: () -> Unit,
+    showDebugActions: Boolean,
+    isGeneratingDemoData: Boolean,
+    onGenerateDemoData: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val themeController = LocalJournalThemeController.current
@@ -515,6 +544,26 @@ private fun EntriesTopBar(
                                 onSignOut()
                             },
                         )
+                        if (showDebugActions) {
+                            DropdownMenuItem(
+                                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                                enabled = !isGeneratingDemoData,
+                                text = {
+                                    MenuItemContent(
+                                        iconRes = Res.drawable.icon_add_24,
+                                        text = if (isGeneratingDemoData) {
+                                            "Генерируем данные..."
+                                        } else {
+                                            "Нагенерить данные"
+                                        },
+                                    )
+                                },
+                                onClick = {
+                                    menuExpanded.value = false
+                                    onGenerateDemoData()
+                                },
+                            )
+                        }
                     }
                 }
             },

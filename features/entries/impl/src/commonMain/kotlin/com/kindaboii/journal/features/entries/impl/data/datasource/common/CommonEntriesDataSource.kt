@@ -23,6 +23,22 @@ interface CommonEntriesDataSource {
     fun getEntries(userId: String): Flow<List<Entry>>
 
     /**
+     * Returns entries before field decryption.
+     *
+     * This is intentionally narrow and used only to validate whether the entered
+     * encryption passphrase can decrypt already-synced encrypted entries.
+     */
+    suspend fun getEntriesForEncryptionValidation(userId: String): List<Entry>
+
+    /**
+     * Observes entries before field decryption.
+     *
+     * Used by the unlock screen to switch from "create" to "unlock" if encrypted
+     * entries arrive after the first local sync on a new device.
+     */
+    fun observeEntriesForEncryptionValidation(userId: String): Flow<List<Entry>>
+
+    /**
      * Returns a single entry lookup by ID.
      * Returns null if entry doesn't exist or is deleted.
      */
