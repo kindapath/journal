@@ -9,19 +9,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 
 @Stable
-class JournalThemeController(initialIsDarkTheme: Boolean) {
+class JournalThemeController(
+    initialIsDarkTheme: Boolean,
+    private val onThemeChanged: (Boolean) -> Unit = {},
+) {
     var isDarkTheme by mutableStateOf(initialIsDarkTheme)
         private set
 
     fun toggleTheme() {
         isDarkTheme = !isDarkTheme
+        onThemeChanged(isDarkTheme)
     }
 }
 
 @Composable
-fun rememberJournalThemeController(initialIsDarkTheme: Boolean): JournalThemeController =
-    remember(initialIsDarkTheme) {
-        JournalThemeController(initialIsDarkTheme = initialIsDarkTheme)
+fun rememberJournalThemeController(
+    initialIsDarkTheme: Boolean,
+    onThemeChanged: (Boolean) -> Unit = {},
+): JournalThemeController =
+    remember(initialIsDarkTheme, onThemeChanged) {
+        JournalThemeController(
+            initialIsDarkTheme = initialIsDarkTheme,
+            onThemeChanged = onThemeChanged,
+        )
     }
 
 val LocalJournalThemeController = staticCompositionLocalOf<JournalThemeController> {
