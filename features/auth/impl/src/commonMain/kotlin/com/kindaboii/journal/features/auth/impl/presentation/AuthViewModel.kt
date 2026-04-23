@@ -72,7 +72,6 @@ class AuthViewModel(
             _uiState.update { state ->
                 state.copy(
                     isSubmitting = true,
-                    isDemoSubmitting = false,
                     infoMessage = null,
                     errorMessage = null,
                 )
@@ -96,7 +95,6 @@ class AuthViewModel(
                         when (current.mode) {
                             AuthMode.SignIn -> state.copy(
                                 isSubmitting = false,
-                                isDemoSubmitting = false,
                                 password = "",
                                 confirmationCode = "",
                                 pendingConfirmationEmail = "",
@@ -106,7 +104,6 @@ class AuthViewModel(
 
                             AuthMode.SignUp -> state.copy(
                                 isSubmitting = false,
-                                isDemoSubmitting = false,
                                 password = "",
                                 pendingConfirmationEmail = current.email,
                                 confirmationCode = "",
@@ -120,45 +117,7 @@ class AuthViewModel(
                     _uiState.update { state ->
                         state.copy(
                             isSubmitting = false,
-                            isDemoSubmitting = false,
                             errorMessage = mapAuthError(throwable.message),
-                        )
-                    }
-                }
-        }
-    }
-
-    fun submitDemo() {
-        if (_uiState.value.isDemoSubmitting) return
-
-        viewModelScope.launch {
-            _uiState.update { state ->
-                state.copy(
-                    isSubmitting = false,
-                    isDemoSubmitting = true,
-                    infoMessage = null,
-                    errorMessage = null,
-                    password = "",
-                    confirmationCode = "",
-                    pendingConfirmationEmail = "",
-                )
-            }
-
-            authService.signInDemo()
-                .onSuccess {
-                    _uiState.update { state ->
-                        state.copy(
-                            isDemoSubmitting = false,
-                            infoMessage = null,
-                            errorMessage = null,
-                        )
-                    }
-                }
-                .onFailure { throwable ->
-                    _uiState.update { state ->
-                        state.copy(
-                            isDemoSubmitting = false,
-                            errorMessage = mapDemoError(throwable.message),
                         )
                     }
                 }
@@ -186,7 +145,6 @@ class AuthViewModel(
             _uiState.update { state ->
                 state.copy(
                     isConfirming = true,
-                    isDemoSubmitting = false,
                     infoMessage = null,
                     errorMessage = null,
                 )
@@ -202,7 +160,6 @@ class AuthViewModel(
                             confirmationCode = "",
                             pendingConfirmationEmail = "",
                             isConfirming = false,
-                            isDemoSubmitting = false,
                             infoMessage = "Почта подтверждена. Теперь войдите в аккаунт.",
                             errorMessage = null,
                         )
@@ -212,7 +169,6 @@ class AuthViewModel(
                     _uiState.update { state ->
                         state.copy(
                             isConfirming = false,
-                            isDemoSubmitting = false,
                             errorMessage = mapConfirmationError(throwable.message),
                         )
                     }
@@ -232,7 +188,6 @@ class AuthViewModel(
             _uiState.update { state ->
                 state.copy(
                     isResendingCode = true,
-                    isDemoSubmitting = false,
                     infoMessage = null,
                     errorMessage = null,
                 )
@@ -243,7 +198,6 @@ class AuthViewModel(
                     _uiState.update { state ->
                         state.copy(
                             isResendingCode = false,
-                            isDemoSubmitting = false,
                             infoMessage = "Новый код отправлен на $email.",
                             errorMessage = null,
                         )
@@ -253,44 +207,10 @@ class AuthViewModel(
                     _uiState.update { state ->
                         state.copy(
                             isResendingCode = false,
-                            isDemoSubmitting = false,
                             errorMessage = mapAuthError(throwable.message),
                         )
                     }
                 }
-        }
-    }
-
-    private fun mapDemoError(rawMessage: String?): String {
-        val message = rawMessage.orEmpty().trim()
-
-        if (message.contains("demo access is not enabled", ignoreCase = true)) {
-            return "Демо-доступ отключен в этой сборке приложения."
-        }
-
-        if (message.contains("anonymous", ignoreCase = true) &&
-            (message.contains("disabled", ignoreCase = true) || message.contains("enable", ignoreCase = true))
-        ) {
-            return "В Supabase еще не включены Anonymous Sign-Ins. Нужно включить их в Dashboard: Authentication -> Providers -> Anonymous."
-        }
-
-        if (message.contains("captcha", ignoreCase = true)) {
-            return "Supabase запросил CAPTCHA для demo-входа. Нужно либо настроить CAPTCHA, либо отключить ее для anonymous sign-ins."
-        }
-
-        if (message.contains("provider", ignoreCase = true) && message.contains("disabled", ignoreCase = true)) {
-            return "Похоже, провайдер anonymous login отключен в Supabase."
-        }
-
-        val compactMessage = message
-            .replace('\n', ' ')
-            .replace(Regex("\\s+"), " ")
-            .trim()
-
-        return if (compactMessage.isNotBlank()) {
-            "Не удалось войти в demo-режим: $compactMessage"
-        } else {
-            "Не удалось войти в demo-режим. Проверьте, что в Supabase включены Anonymous Sign-Ins."
         }
     }
 

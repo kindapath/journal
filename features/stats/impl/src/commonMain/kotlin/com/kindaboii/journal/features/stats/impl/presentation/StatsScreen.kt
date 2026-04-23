@@ -355,8 +355,8 @@ private fun SummaryCards(
             modifier = Modifier.weight(1f),
         )
         StatCard(
-            label = "Серия дней",
-            value = currentStreak.toString(),
+            label = "Серия",
+            value = pluralDays(currentStreak),
             modifier = Modifier.weight(1f),
         )
     }
@@ -714,6 +714,14 @@ private fun moodColor(value: Long): Color = when {
     value < 71 -> JournalColors.MoodSlightlyPleasant
     value < 86 -> JournalColors.MoodPleasant
     else -> JournalColors.MoodVeryPleasant
+}
+
+private fun pluralDays(days: Int): String = when {
+    days == 0 -> "0 дней"
+    days % 100 in 11..19 -> "$days дней"
+    days % 10 == 1 -> "$days день"
+    days % 10 in 2..4 -> "$days дня"
+    else -> "$days дней"
 }
 
 @Composable

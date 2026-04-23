@@ -6,7 +6,6 @@ data class AuthViewState(
     val password: String = "",
     val confirmationCode: String = "",
     val isSubmitting: Boolean = false,
-    val isDemoSubmitting: Boolean = false,
     val isConfirming: Boolean = false,
     val isResendingCode: Boolean = false,
     val pendingConfirmationEmail: String = "",

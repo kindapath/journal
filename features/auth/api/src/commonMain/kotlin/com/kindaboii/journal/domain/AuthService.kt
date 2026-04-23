@@ -15,8 +15,6 @@ interface AuthService {
         password: String,
     ): Result<Unit>
 
-    suspend fun signInDemo(): Result<Unit>
-
     suspend fun signOut(): Result<Unit>
 
     suspend fun resendSignUpConfirmation(email: String): Result<Unit>

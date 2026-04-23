@@ -3,7 +3,6 @@ package com.kindaboii.journal.features.auth.impl.data
 import com.kindaboii.journal.domain.AuthEmailChangeResult
 import com.kindaboii.journal.domain.AuthService
 import com.kindaboii.journal.domain.AuthState
-import com.kindaboii.journal.network.ApiConfig
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
@@ -49,14 +48,6 @@ class SupabaseAuthService(
             this.email = email
             this.password = password
         }
-    }
-
-    override suspend fun signInDemo(): Result<Unit> = runCatching {
-        check(ApiConfig.SUPABASE_ANON_AUTH_ENABLED) {
-            "Demo access is not enabled for this build."
-        }
-
-        supabase.auth.signInAnonymously()
     }
 
     override suspend fun signOut(): Result<Unit> = runCatching {

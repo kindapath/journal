@@ -6,7 +6,6 @@ import com.kindaboii.journal.features.entries.impl.di.entriesModule
 import com.kindaboii.journal.features.profile.impl.di.profileModule
 import com.kindaboii.journal.features.stats.impl.di.statsModule
 import com.kindaboii.journal.lifecycle.AppLifecycleManager
-import com.kindaboii.journal.lifecycle.DemoSessionManager
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -19,6 +18,5 @@ val appModule = module {
         statsModule,
         networkModule,
     )
-    singleOf(::DemoSessionManager)
     singleOf(::AppLifecycleManager)
 }

@@ -14,26 +14,26 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kindaboii.journal.common.ui.ConstrainedContainer
 import com.kindaboii.journal.common.ui.LayoutType
 import com.kindaboii.journal.common.ui.PasswordOutlinedTextField
 import com.kindaboii.journal.common.ui.withLayoutType
-import com.kindaboii.journal.network.ApiConfig
 import org.koin.compose.koinInject
 
 @Composable
@@ -55,7 +55,6 @@ fun AuthScreen() {
                     onPasswordChange = viewModel::onPasswordChange,
                     onConfirmationCodeChange = viewModel::onConfirmationCodeChange,
                     onSubmit = viewModel::submit,
-                    onSubmitDemo = viewModel::submitDemo,
                     onConfirmSignUp = viewModel::confirmSignUp,
                     onResendSignUpCode = viewModel::resendSignUpCode,
                 )
@@ -67,7 +66,6 @@ fun AuthScreen() {
                     onPasswordChange = viewModel::onPasswordChange,
                     onConfirmationCodeChange = viewModel::onConfirmationCodeChange,
                     onSubmit = viewModel::submit,
-                    onSubmitDemo = viewModel::submitDemo,
                     onConfirmSignUp = viewModel::confirmSignUp,
                     onResendSignUpCode = viewModel::resendSignUpCode,
                 )
@@ -84,7 +82,6 @@ private fun AuthExpandedScreen(
     onPasswordChange: (String) -> Unit,
     onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    onSubmitDemo: () -> Unit,
     onConfirmSignUp: () -> Unit,
     onResendSignUpCode: () -> Unit,
 ) {
@@ -100,7 +97,6 @@ private fun AuthExpandedScreen(
                 onPasswordChange = onPasswordChange,
                 onConfirmationCodeChange = onConfirmationCodeChange,
                 onSubmit = onSubmit,
-                onSubmitDemo = onSubmitDemo,
                 onConfirmSignUp = onConfirmSignUp,
                 onResendSignUpCode = onResendSignUpCode,
                 modifier = Modifier
@@ -120,7 +116,6 @@ private fun AuthCompactScreen(
     onPasswordChange: (String) -> Unit,
     onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    onSubmitDemo: () -> Unit,
     onConfirmSignUp: () -> Unit,
     onResendSignUpCode: () -> Unit,
 ) {
@@ -135,7 +130,6 @@ private fun AuthCompactScreen(
             onPasswordChange = onPasswordChange,
             onConfirmationCodeChange = onConfirmationCodeChange,
             onSubmit = onSubmit,
-            onSubmitDemo = onSubmitDemo,
             onConfirmSignUp = onConfirmSignUp,
             onResendSignUpCode = onResendSignUpCode,
             modifier = Modifier
@@ -154,14 +148,12 @@ private fun AuthCard(
     onPasswordChange: (String) -> Unit,
     onConfirmationCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    onSubmitDemo: () -> Unit,
     onConfirmSignUp: () -> Unit,
     onResendSignUpCode: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val awaitingConfirmation = uiState.mode == AuthMode.SignUp && uiState.pendingConfirmationEmail.isNotBlank()
-    val isBusy = uiState.isSubmitting || uiState.isDemoSubmitting || uiState.isConfirming || uiState.isResendingCode
-    val isDemoAvailable = ApiConfig.SUPABASE_ANON_AUTH_ENABLED
+    val isBusy = uiState.isSubmitting || uiState.isConfirming || uiState.isResendingCode
 
     Card(
         modifier = modifier,
@@ -229,7 +221,8 @@ private fun AuthCard(
                         enabled = !isBusy,
                         modifier = Modifier
                             .weight(1f)
-                            .pointerHoverIcon(PointerIcon.Hand),
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            ,
                     ) {
                         Text("Подтвердить")
                     }
@@ -239,7 +232,8 @@ private fun AuthCard(
                         enabled = !isBusy,
                         modifier = Modifier
                             .weight(1f)
-                            .pointerHoverIcon(PointerIcon.Hand),
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            ,
                     ) {
                         Text("Отправить снова")
                     }
@@ -250,27 +244,12 @@ private fun AuthCard(
                     enabled = !isBusy,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .pointerHoverIcon(PointerIcon.Hand),
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        ,
                 ) {
                     Text(
                         text = if (uiState.mode == AuthMode.SignIn) "Войти" else "Зарегистрироваться",
                     )
-                }
-
-                if (isDemoAvailable) {
-                    FilledTonalButton(
-                        onClick = onSubmitDemo,
-                        enabled = !isBusy,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .pointerHoverIcon(PointerIcon.Hand),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                    ) {
-                        Text(
-                            text = "Демо-доступ",
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    }
                 }
             }
 
@@ -356,3 +335,4 @@ private fun authBackgroundBrush(): Brush =
             MaterialTheme.colorScheme.surfaceVariant,
         ),
     )
+
