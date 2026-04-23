@@ -22,6 +22,8 @@ class EntriesViewModel(
 ): ViewModel() {
     private val _viewState = MutableStateFlow<EntriesViewState>(EntriesViewState.Loading)
     val viewState: StateFlow<EntriesViewState> = _viewState.asStateFlow()
+    private val _isGeneratingDemoData = MutableStateFlow(false)
+    val isGeneratingDemoData: StateFlow<Boolean> = _isGeneratingDemoData.asStateFlow()
 
     private var allEntries: List<Entry> = emptyList()
     private var dateFilter = EntriesDateRangeFilter()
@@ -74,6 +76,21 @@ class EntriesViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             val html = generateAllEntriesHtml(allEntries)
             printHtml(html, "Дневник. ${exportTimestamp()}")
+        }
+    }
+
+    fun onGenerateDemoData() {
+        if (_isGeneratingDemoData.value) return
+
+        viewModelScope.launch {
+            _isGeneratingDemoData.value = true
+            try {
+                DebugDemoEntriesFactory.build(now = Clock.System.now())
+                    .sortedBy(Entry::createdAt)
+                    .forEach { entry -> repository.insertEntry(entry) }
+            } finally {
+                _isGeneratingDemoData.value = false
+            }
         }
     }
 
